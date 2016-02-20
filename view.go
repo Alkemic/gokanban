@@ -13,10 +13,10 @@ func TaskListView(
 	p map[string]string,
 ) {
 	tasks := []Task{}
-	db.Preload("Tags", "InColumn").Find(&tasks)
+	db.Preload("Tags", "Column").Find(&tasks)
 
 	if err := json.NewEncoder(w).Encode(tasks); err != nil {
-		panic(err)
+		log.Println(err)
 	}
 }
 
@@ -26,13 +26,13 @@ func TaskView(
 	p map[string]string,
 ) {
 	task := Task{}
-	log.Println(task.InColumn)
+	log.Println(task.Column)
 	id, _ := strconv.Atoi(p["id"])
 
-	db.Where("id = ?", id).Preload("Tags", "InColumn").Find(&task)
+	db.Where("id = ?", id).Preload("Tags", "Column").Find(&task)
 
 	if err := json.NewEncoder(w).Encode(task); err != nil {
-		panic(err)
+		log.Println(err)
 	}
 }
 
@@ -42,10 +42,15 @@ func ColumnListView(
 	p map[string]string,
 ) {
 	columns := []Column{}
-	db.Find(&columns)
+	db.Order("`order` asc").Find(&columns)
+
+	for i, column := range columns {
+		columns[i].Tasks = &[]Task{}
+		db.Where("column_id = ?", column.ID).Find(columns[i].Tasks)
+	}
 
 	if err := json.NewEncoder(w).Encode(columns); err != nil {
-		panic(err)
+		log.Println(err)
 	}
 }
 
@@ -59,10 +64,9 @@ func ColumnView(
 	id, _ := strconv.Atoi(p["id"])
 
 	db.Where("id = ?", id).Find(&column)
-	db.Model(&column).Related(&tasks, "InColumn")
-	log.Println(tasks)
+	db.Model(&column).Related(&tasks, "Column")
 
 	if err := json.NewEncoder(w).Encode(column); err != nil {
-		panic(err)
+		log.Println(err)
 	}
 }

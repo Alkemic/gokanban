@@ -1,0 +1,26 @@
+{
+  "name": "go-kanban",
+  "description": "GoKanaban frontend",
+  "main": "",
+  "authors": [
+    "Daniel Alkemic Czuba <alkemic7@gmail.com>"
+  ],
+  "license": "MIT",
+  "moduleType": [
+    "globals"
+  ],
+  "homepage": "",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "angular": "1.5.0",
+    "bootstrap": "3.3.6",
+    "angular-bootstrap": "^1.1.2",
+    "angular-resource": "^1.5.0"
+  }
+}

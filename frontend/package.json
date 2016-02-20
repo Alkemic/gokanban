@@ -1,0 +1,14 @@
+{
+  "name": "go-kanban",
+  "version": "0.0.1",
+  "description": "GoKanaban frontend",
+  "repository": "http://github.com/Alkemic/gokanban",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Daniel Alkemic Czuba <alkemic7@gmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "bower": "1.7.7"
+  }
+}

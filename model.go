@@ -25,7 +25,7 @@ func init() {
 	// Disable table name's pluralization
 	db.SingularTable(true)
 
-	db.AutoMigrate(&Task{}, &Tag{}, &Column{})
+	db.AutoMigrate(&Column{}, &Task{}, &Tag{})
 }
 
 type Task struct {
@@ -36,7 +36,8 @@ type Task struct {
 
 	Tags []Tag `gorm:"many2many:task_tags;"`
 
-	InColumn *Column
+	Column   *Column
+	ColumnID int
 }
 
 type Tag struct {
@@ -51,4 +52,6 @@ type Column struct {
 	Limit int    `sql:"DEFAULT:10"`
 
 	Order int `sql:"DEFAULT:0"`
+
+	Tasks *[]Task `sql:"-"`
 }

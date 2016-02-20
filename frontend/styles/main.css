@@ -1,0 +1,29 @@
+body {
+    padding-top: 50px;
+}
+.starter-template {
+    padding: 40px 15px;
+    text-align: center;
+}
+
+.table {
+    margin-top: 10px;
+    border-collapse: collapse;
+}
+.table td, table th {
+    border: 1px solid #ddd;
+}
+.table tr:first-child th {
+    border-top: 0;
+}
+.table tr:last-child td {
+    border-bottom: 0;
+}
+.table tr td:first-child,
+.table tr th:first-child {
+    border-left: 0;
+}
+.table tr td:last-child,
+.table tr th:last-child {
+    border-right: 0;
+}
