@@ -19,14 +19,16 @@ function($scope, $log, $uibModal, $http, $httpParamSerializer) {
     };
     $scope.LoadColumns();
 
-    $scope.AddEditTask = function(task) {
+    $scope.AddEditTask = function(opts) {
+        opts = opts || {};
         var modalInstance = $uibModal.open({
             animation: $scope.animationsEnabled,
             templateUrl: '/frontend/templates/add_task.html',
             controller: 'AddEditTaskCtrl',
             size: 'sm',
             resolve: {
-                task: function() { return task || {}; },
+                task: function() { return opts.task || {}; },
+                column: function() { return opts.column; },
                 parentScope: function() { return $scope; }
             }
         });
@@ -73,7 +75,10 @@ function($scope, $log, $uibModal, $http, $httpParamSerializer) {
     };
 });
 
-App.controller('AddEditTaskCtrl', function($scope, $uibModalInstance, $http, $httpParamSerializer, task, parentScope) {
+App.controller('AddEditTaskCtrl', function(
+    $scope, $uibModalInstance, $http, $httpParamSerializer,
+    task, column, parentScope
+) {
     $scope.task = task;
     $scope.form = angular.copy(task);
 
@@ -85,18 +90,21 @@ App.controller('AddEditTaskCtrl', function($scope, $uibModalInstance, $http, $ht
     }
 
     $scope.save = function() {
+        var data = {
+            ID: $scope.form.ID,
+            Title: $scope.form.Title,
+            Description: $scope.form.Description,
+            TagsString: $scope.form.TagsString,
+        };
+        if (column !== undefined) {
+            data.ColumnID = column.ID;
+        }
+
         $http({
             url: '/task/' + (task.ID === undefined ? '' : task.ID + '/'),
             method: (task.ID === undefined ? 'POST' : 'PUT'),
-            data: $httpParamSerializer({
-                ID: $scope.form.ID,
-                Title: $scope.form.Title,
-                Description: $scope.form.Description,
-                TagsString: $scope.form.TagsString,
-            }),
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded'
-            }
+            data: $httpParamSerializer(data),
+            headers: {'Content-Type': 'application/x-www-form-urlencoded'}
         }).then(function(res) {
             parentScope.LoadColumns();
             $uibModalInstance.close();

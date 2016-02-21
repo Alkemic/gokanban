@@ -26,8 +26,15 @@ func TaskListView(
 			db.FirstOrCreate(&tag, Tag{Name: strings.TrimSpace(value)})
 			tags = append(tags, tag)
 		}
+
 		column := Column{}
-		db.FirstOrCreate(&column, Column{Order: 1})
+		if _, ok := r.Form["ColumnID"]; ok {
+			ColumnID, _ := strconv.Atoi(r.Form.Get("ColumnID"))
+			db.Where("id = ?", ColumnID).Find(&column)
+		} else {
+			db.FirstOrCreate(&column, Column{Order: 1})
+		}
+
 		task := Task{
 			Title:       r.Form.Get("Title"),
 			Description: r.Form.Get("Description"),

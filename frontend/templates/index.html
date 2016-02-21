@@ -21,19 +21,18 @@
             <div class="container">
                 <div class="navbar-header">
                     <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
-                    <span class="sr-only">Toggle navigation</span>
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                </button>
-                <a class="navbar-brand" href="#">goKanban</a>
-            </div>
-            <div id="navbar" class="collapse navbar-collapse">
-                <ul class="nav navbar-nav">
-                     <li><a ng-click="AddEditTask()">Add task</a></li>
-
+                        <span class="sr-only">Toggle navigation</span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                    </button>
+                    <span class="navbar-brand">goKanban</span>
+                </div>
+                <div id="navbar" class="collapse navbar-collapse">
+                    <ul class="nav navbar-nav">
+                         <li><a ng-click="AddEditTask()">Add task</a></li>
                     </ul>
-                </div><!--/.nav-collapse -->
+                </div>
             </div>
         </nav>
 
@@ -44,6 +43,7 @@
                         <th style="width: {{100.0/columns.length}}%"
                             ng-repeat="column in columns">
                             {{column.Name}}
+                            <i class="pull-right glyphicon glyphicon-plus" ng-click="AddEditTask({column: column})"></i>
                         </th>
                     </tr>
                 </thead>
@@ -57,7 +57,7 @@
                                         <div class="btn-group" uib-dropdown is-open="status.isopen">
                                             <i class="menu glyphicon glyphicon-menu-hamburger" uib-dropdown-toggle ng-disabled="disabled"></i>
                                             <ul uib-dropdown-menu role="menu"  aria-labelledby="simple-btn-keyboard-nav">
-                                                <li role="menuitem"><a ng-click="AddEditTask(task)"><i class="glyphicon glyphicon-edit"></i> Edit</a></li>
+                                                <li role="menuitem"><a ng-click="AddEditTask({task: task})"><i class="glyphicon glyphicon-edit"></i> Edit</a></li>
                                                 <li role="menuitem" ng-repeat="col in columns" ng-if="col.Name != column.Name">
                                                     <a ng-click="MoveToColumn(task, col)"><i class="glyphicon glyphicon-move"></i> Move to {{col.Name}}</a>
                                                 </li>

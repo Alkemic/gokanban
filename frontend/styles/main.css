@@ -72,3 +72,7 @@ html, body{
 .task .dropdown-menu>li>a{
     padding: 3px 10px;
 }
+
+*[ng-click] {
+    cursor: pointer;
+}
