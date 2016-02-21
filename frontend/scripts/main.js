@@ -5,7 +5,7 @@ var App = angular.module(
 );
 
 App.controller('KanbanCtrl',
-function($scope, $log, $uibModal, $http) {
+function($scope, $log, $uibModal, $http, $httpParamSerializer) {
     $scope.LoadColumns = function() {
         $scope.loading = true;
         $http.get('/column/')
@@ -56,6 +56,21 @@ function($scope, $log, $uibModal, $http) {
             $log.info('Modal dismissed at: ' + new Date());
         });
     };
+
+    $scope.MoveToColumn = function(task, column) {
+        $http({
+            url: '/task/' + task.ID + '/',
+            method: 'PUT',
+            data: $httpParamSerializer({
+                ColumnID: column.ID,
+            }),
+            headers: {'Content-Type': 'application/x-www-form-urlencoded'}
+        }).then(function(res) {
+            $scope.LoadColumns();
+        }, function() {
+            $scope.error = 'Something went wrong';
+        });
+    };
 });
 
 App.controller('AddEditTaskCtrl', function($scope, $uibModalInstance, $http, $httpParamSerializer, task, parentScope) {
@@ -65,7 +80,6 @@ App.controller('AddEditTaskCtrl', function($scope, $uibModalInstance, $http, $ht
     if (task && task.Tags){
         $scope.form.TagsString = '';
         for (var i = task.Tags.length - 1; i >= 0; i--) {
-            console.log(i, task.Tags[i])
             $scope.form.TagsString = task.Tags[i].Name + (task.Tags.length - 1 > i ? ', ':'') + $scope.form.TagsString;
         }
     }

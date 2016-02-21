@@ -52,19 +52,28 @@ func TaskView(
 	r *http.Request,
 	p map[string]string,
 ) {
+	id, _ := strconv.Atoi(p["id"])
+	task := Task{}
 	if r.Method == "PUT" {
 		r.ParseForm()
-		task := Task{}
-		id, _ := strconv.Atoi(p["id"])
 
 		db.Where("id = ?", id).Find(&task)
-		task.Title = r.Form.Get("Title")
-		task.Description = r.Form.Get("Description")
-		db.Exec("DELETE FROM task_tags WHERE task_id = ?", task.ID)
-		task.Tags = prepareTags(r.Form.Get("TagsString"))
+
+		if _, ok := r.Form["Title"]; ok {
+			task.Title = r.Form.Get("Title")
+		}
+		if _, ok := r.Form["Description"]; ok {
+			task.Description = r.Form.Get("Description")
+		}
+		if _, ok := r.Form["ColumnID"]; ok {
+			task.ColumnID, _ = strconv.Atoi(r.Form.Get("ColumnID"))
+		}
+		if _, ok := r.Form["TagsString"]; ok {
+			db.Exec("DELETE FROM task_tags WHERE task_id = ?", task.ID)
+			task.Tags = prepareTags(r.Form.Get("TagsString"))
+		}
 		db.Save(&task)
 	} else if r.Method == "DELETE" {
-		id, _ := strconv.Atoi(p["id"])
 		db.Where("id = ?", id).Delete(&Task{})
 
 		err := json.NewEncoder(w).Encode(map[string]string{"status": "ok"})
@@ -72,9 +81,6 @@ func TaskView(
 			log.Println(err)
 		}
 	} else if r.Method == "GET" {
-		task := Task{}
-		id, _ := strconv.Atoi(p["id"])
-
 		db.Where("id = ?", id).Preload("Tags", "Column").Find(&task)
 
 		err := json.NewEncoder(w).Encode(task)
