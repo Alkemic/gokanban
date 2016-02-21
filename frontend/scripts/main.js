@@ -1,14 +1,114 @@
 'use strict';
 var App = angular.module(
     'kanban',
-    ['ui.bootstrap']
+    ['ui.bootstrap', 'ngDragDrop']
 );
 
 App.controller('KanbanCtrl',
-function($scope, $uibModal, $http) {
-    $http.get('/column/')
-        .then(function(columns) {
-            $scope.columns = columns.data;
-            console.log($scope.columns.length)
+function($scope, $log, $uibModal, $http) {
+    $scope.LoadColumns = function() {
+        $scope.loading = true;
+        $http.get('/column/')
+            .then(function(columns) {
+                $scope.columns = columns.data;
+                $scope.loading = false;
+            }, function(data) {
+                console.error('Error loading data', data);
+                $scope.loading = false;
+            });
+    };
+    $scope.LoadColumns();
+
+    $scope.AddEditTask = function(task) {
+        var modalInstance = $uibModal.open({
+            animation: $scope.animationsEnabled,
+            templateUrl: '/frontend/templates/add_task.html',
+            controller: 'AddEditTaskCtrl',
+            size: 'sm',
+            resolve: {
+                task: function() { return task || {}; },
+                parentScope: function() { return $scope; }
+            }
         });
-})
+
+        modalInstance.result.then(function (selectedItem) {
+            $scope.selected = selectedItem;
+        }, function () {
+            $log.info('Modal dismissed at: ' + new Date());
+        });
+    };
+
+    $scope.DeleteTask = function(task) {
+        var modalInstance = $uibModal.open({
+            animation: $scope.animationsEnabled,
+            templateUrl: '/frontend/templates/delete_task.html',
+            controller: 'DeleteTaskCtrl',
+            size: 'sm',
+            resolve: {
+                task: function() { return task || {}; },
+                parentScope: function() { return $scope; }
+            }
+        });
+
+        modalInstance.result.then(function (selectedItem) {
+            $scope.selected = selectedItem;
+        }, function () {
+            $log.info('Modal dismissed at: ' + new Date());
+        });
+    };
+});
+
+App.controller('AddEditTaskCtrl', function($scope, $uibModalInstance, $http, $httpParamSerializer, task, parentScope) {
+    $scope.task = task;
+    $scope.form = angular.copy(task);
+
+    if (task && task.Tags){
+        $scope.form.TagsString = '';
+        for (var i = task.Tags.length - 1; i >= 0; i--) {
+            console.log(i, task.Tags[i])
+            $scope.form.TagsString = task.Tags[i].Name + (task.Tags.length - 1 > i ? ', ':'') + $scope.form.TagsString;
+        }
+    }
+
+    $scope.save = function() {
+        $http({
+            url: '/task/' + (task.ID === undefined ? '' : task.ID + '/'),
+            method: (task.ID === undefined ? 'POST' : 'PUT'),
+            data: $httpParamSerializer({
+                ID: $scope.form.ID,
+                Title: $scope.form.Title,
+                Description: $scope.form.Description,
+                TagsString: $scope.form.TagsString,
+            }),
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            }
+        }).then(function(res) {
+            parentScope.LoadColumns();
+            $uibModalInstance.close();
+        }, function() {
+            $scope.error = 'Something went wrong';
+        });
+    };
+
+    $scope.cancel = function() {
+        $modalInstance.dismiss();
+    };
+});
+
+
+App.controller('DeleteTaskCtrl', function($scope, $uibModalInstance, $http, task, parentScope) {
+    $scope.task = task;
+
+    $scope.confirm = function() {
+        $http.delete('/task/' + task.ID + '/').then(
+            function(res) {
+                console.log(res)
+                parentScope.LoadColumns();
+                $uibModalInstance.close();
+            }, function() {
+                $scope.error = 'Something went wrong';
+            });
+    };
+});
+
