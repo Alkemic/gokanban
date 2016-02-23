@@ -35,7 +35,6 @@
                 </div>
             </div>
         </nav>
-
         <div class="container">
             <table class="table">
                 <thead>
@@ -48,36 +47,39 @@
                     </tr>
                 </thead>
                 <tr>
-                    <td ng-repeat="column in columns" data-drop="true" x-data-jqyoui-options ng-model="column.Tasks" x-jqyoui-droppable>
-                        <div class="task panel panel-default" ng-repeat="task in column.Tasks" ng-model="task" x-data-drag="true" x-jqyoui-draggable x-jqyoui-draggable="{animate:true}">
-                            <div class="panel-heading">
-                                <h3 class="panel-title">
-                                    {{task.Title}}
-                                    <span class="pull-right">
-                                        <div class="btn-group" uib-dropdown is-open="status.isopen">
-                                            <i class="menu glyphicon glyphicon-menu-hamburger" uib-dropdown-toggle ng-disabled="disabled"></i>
-                                            <ul uib-dropdown-menu role="menu"  aria-labelledby="simple-btn-keyboard-nav">
-                                                <li role="menuitem"><a ng-click="AddEditTask({task: task})"><i class="glyphicon glyphicon-edit"></i> Edit</a></li>
-                                                <li role="menuitem" ng-repeat="col in columns" ng-if="col.Name != column.Name">
-                                                    <a ng-click="MoveToColumn(task, col)"><i class="glyphicon glyphicon-move"></i> Move to {{col.Name}}</a>
-                                                </li>
-                                                <li class="divider"></li>
-                                                <li role="menuitem"><a ng-click="DeleteTask(task)"><i class="glyphicon glyphicon-trash"></i> Delete</a></li>
-                                            </ul>
-                                        </div>
-                                    </span>
-                                </h3>
-                            </div>
-                            <div class="panel-body" ng-if="task.Description || task.Tags.length">
-                                {{task.Description}}
-                                <div class="tags" ng-if="task.Tags.length">
-                                    <span class="label label-primary"
-                                        ng-repeat="tag in task.Tags">
-                                        {{tag.Name}}
-                                    </span>
+                    <td ng-repeat="column in columns" dnd-list="column.Tasks" dnd-drop="DndMoveToColumn(column)">
+                        <ul class="tasks-list">
+                            <li class="task panel panel-default" ng-repeat="task in column.Tasks"
+                                dnd-draggable="task"
+                                dnd-dragstart="info.SelectedTask = task; log('dnd-start', SelectedTask, task)"
+                                dnd-effect-allowed="move"
+                                ng-class="{'selected': models.selected === task}">
+                                <div class="panel-heading">
+                                    <h3 class="panel-title">
+                                        {{task.Title}}
+                                        <span class="pull-right">
+                                            <div class="btn-group" uib-dropdown is-open="status.isopen">
+                                                <i class="menu glyphicon glyphicon-menu-hamburger" uib-dropdown-toggle ng-disabled="disabled"></i>
+                                                <ul uib-dropdown-menu role="menu"  aria-labelledby="simple-btn-keyboard-nav">
+                                                    <li role="menuitem"><a ng-click="AddEditTask({task: task})"><i class="glyphicon glyphicon-edit"></i> Edit</a></li>
+                                                    <li class="divider"></li>
+                                                    <li role="menuitem"><a ng-click="DeleteTask(task)"><i class="glyphicon glyphicon-trash"></i> Delete</a></li>
+                                                </ul>
+                                            </div>
+                                        </span>
+                                    </h3>
                                 </div>
-                            </div>
-                        </div>
+                                <div class="panel-body" ng-if="task.Description || task.Tags.length">
+                                    {{task.Description}}
+                                    <div class="tags" ng-if="task.Tags.length">
+                                        <span class="label label-primary"
+                                            ng-repeat="tag in task.Tags">
+                                            {{tag.Name}}
+                                        </span>
+                                    </div>
+                                </div>
+                            </li>
+                        </ul>
                     </td>
                 </tr>
             </table>
@@ -86,9 +88,8 @@
     </div><!-- /#main -->
 
     <script src="/frontend/bower_components/jquery/dist/jquery.min.js"></script>
-    <script src="/frontend/bower_components/jquery-ui/jquery-ui.min.js"></script>
     <script src="/frontend/bower_components/angular/angular.min.js"></script>
-    <script src="/frontend/bower_components/angular-dragdrop/src/angular-dragdrop.min.js"></script>
+    <script src="/frontend/bower_components/angular-drag-and-drop-lists/angular-drag-and-drop-lists.js"></script>
     <script src="/frontend/bower_components/angular-bootstrap/ui-bootstrap-tpls.js"></script>
 
     <script src="/frontend/scripts/main.js"></script>

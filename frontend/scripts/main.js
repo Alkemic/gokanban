@@ -1,7 +1,7 @@
 'use strict';
 var App = angular.module(
     'kanban',
-    ['ui.bootstrap', 'ngDragDrop']
+    ['ui.bootstrap', 'dndLists']
 );
 
 App.controller('KanbanCtrl',
@@ -39,6 +39,15 @@ function($scope, $log, $uibModal, $http, $httpParamSerializer) {
             $log.info('Modal dismissed at: ' + new Date());
         });
     };
+
+    $scope.info ={SelectedTask: null};
+    $scope.DndMoveToColumn = function(column) {
+        console.log('DndMoveToColumn', column, $scope.info.SelectedTask);
+        if (column.ID !== $scope.info.SelectedTask.ColumnID) {
+            $scope.MoveToColumn($scope.info.SelectedTask, column);
+        }
+        $scope.info.SelectedTask = null;
+    }
 
     $scope.DeleteTask = function(task) {
         var modalInstance = $uibModal.open({
