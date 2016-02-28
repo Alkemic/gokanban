@@ -14,6 +14,7 @@ func TaskListView(
 	p map[string]string,
 ) {
 	if r.Method == "POST" {
+		db.LogMode(true)
 		r.ParseForm()
 
 		tags := []Tag{}
@@ -32,7 +33,7 @@ func TaskListView(
 			ColumnID, _ := strconv.Atoi(r.Form.Get("ColumnID"))
 			db.Where("id = ?", ColumnID).Find(&column)
 		} else {
-			db.FirstOrCreate(&column, Column{Order: 1})
+			db.FirstOrCreate(&column, Column{Position: 1})
 		}
 
 		task := Task{
@@ -43,6 +44,11 @@ func TaskListView(
 			ColumnID:    int(column.ID),
 		}
 		db.Save(&task)
+		db.Exec(
+			"update task set position = (select max(position) "+
+				"from task where column_id = ?) + 1 where id = ?;",
+			column.ID, task.ID)
+		db.LogMode(false)
 	} else if r.Method == "GET" {
 		tasks := []Task{}
 		db.Preload("Tags", "Column").Find(&tasks)
@@ -66,14 +72,52 @@ func TaskView(
 
 		db.Where("id = ?", id).Find(&task)
 
+		_, okO := r.Form["Position"]
+		_, okC := r.Form["ColumnID"]
+		if okO && okC {
+			newPosition, _ := strconv.Atoi(r.Form.Get("Position"))
+			newColumnID, _ := strconv.Atoi(r.Form.Get("ColumnID"))
+			if task.ColumnID != newColumnID {
+				// remoce gap in old column
+				db.Exec(
+					"update task set position = position - 1 "+
+						"where column_id = ? and position >= ?;",
+					task.ColumnID, task.Position)
+				// make space in new column
+				db.Exec(
+					"update task set position = position + 1 "+
+						"where column_id = ? and position >= ?;",
+					newColumnID, newPosition)
+			} else {
+				if newPosition > task.Position {
+					// move task between old and new position up
+					db.Exec(
+						`update task set position = position - 1
+							where column_id = ? and position <= ? and
+							position >= ?;`,
+						task.ColumnID, newPosition, task.Position)
+				} else if newPosition < task.Position {
+					// move task between old and new position down
+					db.Exec(
+						`update task set position = position + 1
+							where column_id = ? and position <= ? and
+							position >= ?;`,
+						task.ColumnID, task.Position, newPosition)
+				}
+				// nop when newPosition == task.Position
+			}
+			task.Position = newPosition
+			task.ColumnID = newColumnID
+		} else {
+			if _, ok := r.Form["ColumnID"]; ok {
+				task.ColumnID, _ = strconv.Atoi(r.Form.Get("ColumnID"))
+			}
+		}
 		if _, ok := r.Form["Title"]; ok {
 			task.Title = r.Form.Get("Title")
 		}
 		if _, ok := r.Form["Description"]; ok {
 			task.Description = r.Form.Get("Description")
-		}
-		if _, ok := r.Form["ColumnID"]; ok {
-			task.ColumnID, _ = strconv.Atoi(r.Form.Get("ColumnID"))
 		}
 		if _, ok := r.Form["TagsString"]; ok {
 			db.Exec("DELETE FROM task_tags WHERE task_id = ?", task.ID)
@@ -103,11 +147,12 @@ func ColumnListView(
 	p map[string]string,
 ) {
 	columns := []Column{}
-	db.Order("`order` asc").Find(&columns)
+	db.Order("position asc").Find(&columns)
 
 	for i, column := range columns {
 		columns[i].Tasks = &[]Task{}
-		db.Where("column_id = ?", column.ID).Preload("Tags").Find(columns[i].Tasks)
+		db.Order("position asc").Where(
+			"column_id = ?", column.ID).Preload("Tags").Find(columns[i].Tasks)
 	}
 
 	err := json.NewEncoder(w).Encode(columns)

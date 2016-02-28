@@ -47,12 +47,15 @@
                     </tr>
                 </thead>
                 <tr>
-                    <td ng-repeat="column in columns" dnd-list="column.Tasks" dnd-drop="DndMoveToColumn(column)">
-                        <ul class="tasks-list">
+                    <td ng-repeat="column in columns" class="tasks-container">
+                        <ul class="tasks-list"
+                            dnd-list="column.Tasks"
+                            dnd-drop="DndMoveToColumn(column, index, item)">
                             <li class="task panel panel-default" ng-repeat="task in column.Tasks"
                                 dnd-draggable="task"
-                                dnd-dragstart="info.SelectedTask = task; log('dnd-start', SelectedTask, task)"
+                                dnd-dragstart="info.SelectedTask = task;"
                                 dnd-effect-allowed="move"
+                                dnd-moved="list.splice($index, 1);"
                                 ng-class="{'selected': models.selected === task}">
                                 <div class="panel-heading">
                                     <h3 class="panel-title">

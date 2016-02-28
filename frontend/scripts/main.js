@@ -19,6 +19,10 @@ function($scope, $log, $uibModal, $http, $httpParamSerializer) {
     };
     $scope.LoadColumns();
 
+    $scope.$watch('columns', function(o, n) {
+        if (n) console.log(n[0].Tasks);
+    }, true);
+
     $scope.AddEditTask = function(opts) {
         opts = opts || {};
         var modalInstance = $uibModal.open({
@@ -39,14 +43,19 @@ function($scope, $log, $uibModal, $http, $httpParamSerializer) {
             $log.info('Modal dismissed at: ' + new Date());
         });
     };
+    $scope.log = function() {
+        console.log.apply(console, arguments);
+    }
 
     $scope.info ={SelectedTask: null};
-    $scope.DndMoveToColumn = function(column) {
-        console.log('DndMoveToColumn', column, $scope.info.SelectedTask);
-        if (column.ID !== $scope.info.SelectedTask.ColumnID) {
-            $scope.MoveToColumn($scope.info.SelectedTask, column);
-        }
+    $scope.DndMoveToColumn = function(column, index, element) {
+        console.log("DndMoveToColumn", column, index, element);
+        column.Tasks.splice(index, 0, element);
+        $scope.info.SelectedTask.Position = index + 1;
+        $scope.MoveToColumn($scope.info.SelectedTask, column);
         $scope.info.SelectedTask = null;
+
+        return true;
     }
 
     $scope.DeleteTask = function(task) {
@@ -74,6 +83,7 @@ function($scope, $log, $uibModal, $http, $httpParamSerializer) {
             method: 'PUT',
             data: $httpParamSerializer({
                 ColumnID: column.ID,
+                Position: task.Position,
             }),
             headers: {'Content-Type': 'application/x-www-form-urlencoded'}
         }).then(function(res) {

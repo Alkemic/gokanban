@@ -38,6 +38,8 @@ type Task struct {
 
 	Column   *Column
 	ColumnID int
+
+	Position int `sql:"DEFAULT:0"`
 }
 
 type Tag struct {
@@ -51,7 +53,7 @@ type Column struct {
 	Name  string `sql:"size:127"`
 	Limit int    `sql:"DEFAULT:10"`
 
-	Order int `sql:"DEFAULT:0"`
+	Position int `sql:"DEFAULT:0"`
 
 	Tasks *[]Task `sql:"-"`
 }
