@@ -19,10 +19,6 @@ function($scope, $log, $uibModal, $http, $httpParamSerializer) {
     };
     $scope.LoadColumns();
 
-    $scope.$watch('columns', function(o, n) {
-        if (n) console.log(n[0].Tasks);
-    }, true);
-
     $scope.AddEditTask = function(opts) {
         opts = opts || {};
         var modalInstance = $uibModal.open({
@@ -92,6 +88,20 @@ function($scope, $log, $uibModal, $http, $httpParamSerializer) {
             $scope.error = 'Something went wrong';
         });
     };
+
+    $scope.TaskOrder = function(column) {
+            $scope.orderingInColumn
+            var modalInstance = $uibModal.open({
+            animation: $scope.animationsEnabled,
+            templateUrl: '/frontend/templates/order_tasks.html',
+            controller: 'OrderTasksCtrl',
+            size: 'lg',
+            resolve: {
+                column: column,
+                parentScope: $scope,
+            }
+        });
+    };
 });
 
 App.controller('AddEditTaskCtrl', function(
@@ -104,7 +114,9 @@ App.controller('AddEditTaskCtrl', function(
     if (task && task.Tags){
         $scope.form.TagsString = '';
         for (var i = task.Tags.length - 1; i >= 0; i--) {
-            $scope.form.TagsString = task.Tags[i].Name + (task.Tags.length - 1 > i ? ', ':'') + $scope.form.TagsString;
+            $scope.form.TagsString = task.Tags[i].Name +
+                (task.Tags.length - 1 > i ? ', ':'') +
+                $scope.form.TagsString;
         }
     }
 
@@ -137,7 +149,6 @@ App.controller('AddEditTaskCtrl', function(
     };
 });
 
-
 App.controller('DeleteTaskCtrl', function($scope, $uibModalInstance, $http, task, parentScope) {
     $scope.task = task;
 
@@ -153,3 +164,9 @@ App.controller('DeleteTaskCtrl', function($scope, $uibModalInstance, $http, task
     };
 });
 
+App.controller('OrderTasksCtrl', function($scope, $uibModalInstance, $http, column, parentScope) {
+    $scope.column = column;
+    $scope.tasks = column.Tasks;
+    $scope.parentScope = parentScope;
+    $scope.DndMoveToColumn = parentScope.DndMoveToColumn;
+});

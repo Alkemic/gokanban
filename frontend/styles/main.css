@@ -111,3 +111,22 @@ li.selected {
     background-color: #dff0d8;
     color: #3c763d;
 }
+
+.tasks-order ul.tasks-list li{
+
+}
+
+.tasks-order ul.tasks-list li.dndPlaceholder {
+    width: 50%;
+    float: left;
+}
+
+.tasks-order ul.tasks-list li .panel-title{
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.tasks-order ul.tasks-list li .panel-disabled{
+    opacity: 0.4;
+}
