@@ -130,3 +130,7 @@ li.selected {
 .tasks-order ul.tasks-list li .panel-disabled{
     opacity: 0.4;
 }
+
+form #description {
+    min-height: 200px;
+}

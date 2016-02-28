@@ -25,7 +25,7 @@ function($scope, $log, $uibModal, $http, $httpParamSerializer) {
             animation: $scope.animationsEnabled,
             templateUrl: '/frontend/templates/add_task.html',
             controller: 'AddEditTaskCtrl',
-            size: 'sm',
+            size: 'lg',
             resolve: {
                 task: function() { return opts.task || {}; },
                 column: function() { return opts.column; },
@@ -107,6 +107,7 @@ App.controller('AddEditTaskCtrl', function(
     $scope, $uibModalInstance, $http, $httpParamSerializer,
     task, column, parentScope
 ) {
+    $scope.column = column;
     $scope.task = task;
     $scope.form = angular.copy(task);
 
@@ -148,7 +149,10 @@ App.controller('AddEditTaskCtrl', function(
     };
 });
 
-App.controller('DeleteTaskCtrl', function($scope, $uibModalInstance, $http, task, parentScope) {
+App.controller('DeleteTaskCtrl', function(
+    $scope, $uibModalInstance, $http,
+    task, parentScope
+) {
     $scope.task = task;
 
     $scope.confirm = function() {
@@ -163,7 +167,10 @@ App.controller('DeleteTaskCtrl', function($scope, $uibModalInstance, $http, task
     };
 });
 
-App.controller('OrderTasksCtrl', function($scope, $uibModalInstance, $http, $timeout, column, parentScope) {
+App.controller('OrderTasksCtrl', function(
+    $scope, $uibModalInstance, $http, $timeout,
+    column, parentScope
+) {
     $scope.column = column;
     $scope.tasks = column.Tasks;
     $scope.parentScope = parentScope;
