@@ -28,11 +28,10 @@
                     </button>
                     <span class="navbar-brand">goKanban</span>
                 </div>
-                <div id="navbar" class="collapse navbar-collapse">
-                    <ul class="nav navbar-nav">
-                         <li><a ng-click="AddEditTask()">Add task</a></li>
-                    </ul>
-                </div>
+
+                <form class="navbar-form navbar-right">
+                    <input type="text" class="form-control" ng-model="searchPhrase" placeholder="Search...">
+                </form>
             </div>
         </nav>
         <div class="container">
@@ -57,7 +56,7 @@
                             dnd-list="column.Tasks"
                             dnd-drop="DndMoveToColumn(column, index, item)">
                             <li class="task panel panel-default"
-                                ng-repeat="task in column.Tasks | limitTo:column.Limit"
+                                ng-repeat="task in column.Tasks | filter:searchPhrase | limitTo:column.Limit"
                                 dnd-draggable="task"
                                 dnd-dragstart="info.SelectedTask = task;"
                                 dnd-effect-allowed="move"
