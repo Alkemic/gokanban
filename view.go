@@ -166,12 +166,14 @@ func ColumnView(
 	r *http.Request,
 	p map[string]string,
 ) {
-	tasks := []Task{}
 	column := Column{}
 	id, _ := strconv.Atoi(p["id"])
 
 	db.Where("id = ?", id).Find(&column)
-	db.Model(&column).Related(&tasks, "Column")
+
+	column.Tasks = &[]Task{}
+	db.Order("position asc").Where(
+		"column_id = ?", column.ID).Preload("Tags").Find(column.Tasks)
 
 	err := json.NewEncoder(w).Encode(column)
 	if err != nil {

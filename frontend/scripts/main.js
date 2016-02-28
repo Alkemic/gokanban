@@ -45,7 +45,6 @@ function($scope, $log, $uibModal, $http, $httpParamSerializer) {
 
     $scope.info ={SelectedTask: null};
     $scope.DndMoveToColumn = function(column, index, element) {
-        console.log("DndMoveToColumn", column, index, element);
         column.Tasks.splice(index, 0, element);
         $scope.info.SelectedTask.Position = index + 1;
         $scope.MoveToColumn($scope.info.SelectedTask, column);
@@ -164,9 +163,21 @@ App.controller('DeleteTaskCtrl', function($scope, $uibModalInstance, $http, task
     };
 });
 
-App.controller('OrderTasksCtrl', function($scope, $uibModalInstance, $http, column, parentScope) {
+App.controller('OrderTasksCtrl', function($scope, $uibModalInstance, $http, $timeout, column, parentScope) {
     $scope.column = column;
     $scope.tasks = column.Tasks;
     $scope.parentScope = parentScope;
-    $scope.DndMoveToColumn = parentScope.DndMoveToColumn;
+    $scope.DndMoveToColumn = function(column, index, element) {
+        parentScope.DndMoveToColumn(column, index, element);
+        $timeout(function() {
+            $scope.loading = true;
+            $http.get('/column/' + column.ID + '/')
+                .then(function(data) {
+                    $scope.column = data.data;
+                    $scope.tasks = data.data.Tasks;
+                }, function(data) {
+                    console.error('Error loading data', data);
+                });
+        }, 100);
+    };
 });
