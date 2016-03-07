@@ -65,6 +65,12 @@ html, body{
     overflow: hidden;
     word-break: break-all;
 }
+.task .panel-body p {
+    margin: 0 0 5px 0;
+}
+.task .panel-body ul, .task .panel-body ol {
+    padding-left: 20px;
+}
 .task .panel-title i.menu {
     cursor: pointer;
     opacity: 0.6;

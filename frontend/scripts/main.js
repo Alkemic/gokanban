@@ -1,8 +1,15 @@
 'use strict';
 var App = angular.module(
     'kanban',
-    ['ui.bootstrap', 'dndLists']
+    ['ngSanitize', 'ui.bootstrap', 'dndLists', 'mdMarkdownIt']
 );
+
+App.config(function(markdownItConverterProvider) {
+    markdownItConverterProvider.config('commonmark', {
+        breaks: true,
+        html: true
+    });
+});
 
 App.controller('KanbanCtrl',
 function($scope, $log, $uibModal, $http, $httpParamSerializer) {
