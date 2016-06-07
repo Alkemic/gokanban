@@ -84,7 +84,7 @@
                                     </h3>
                                 </div>
                                 <div class="panel-body" ng-if="task.Description || task.Tags.length">
-                                <span markdown-it="task.Description"></span>
+                                    <span ng-bind-html="task.DescriptionRendered"></span>
                                     <div class="tags" ng-if="task.Tags.length">
                                         <span class="label label-primary"
                                             ng-repeat="tag in task.Tags">
@@ -106,9 +106,7 @@
     <script src="/frontend/bower_components/angular-drag-and-drop-lists/angular-drag-and-drop-lists.js"></script>
     <script src="/frontend/bower_components/angular-bootstrap/ui-bootstrap-tpls.js"></script>
 
-    <script src="/frontend/bower_components/markdown-it/dist/markdown-it.min.js"></script>
     <script src="/frontend/bower_components/angular-sanitize/angular-sanitize.min.js"></script>
-    <script src="/frontend/bower_components/angular-markdown-it/dist/ng-markdownit.min.js"></script>
 
     <script src="/frontend/scripts/main.js"></script>
 </body>
