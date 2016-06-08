@@ -7,7 +7,7 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
-var db gorm.DB
+var db *gorm.DB
 
 func init() {
 	var err error
@@ -33,6 +33,7 @@ type Task struct {
 
 	Title       string `sql:"size:255"`
 	Description string
+	DescriptionRendered string `gorm:"-"`
 
 	Tags []Tag `gorm:"many2many:task_tags;"`
 

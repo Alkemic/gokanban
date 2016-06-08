@@ -15,7 +15,7 @@
             dnd-effect-allowed="move">
             <div class="task panel panel-default"
                 ng-class="{'panel-disabled': $index >= column.Limit}">
-                <div class="panel-heading">
+                <div class="panel-heading" uib-popover-html="task.DescriptionRendered" popover-trigger="mouseenter">
                     <h3 class="panel-title">
                         {{task.Title}}
                     </h3>

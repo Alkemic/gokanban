@@ -52,6 +52,9 @@ func TaskListView(
 	} else if r.Method == "GET" {
 		tasks := []Task{}
 		db.Preload("Tags", "Column").Find(&tasks)
+		for i, task := range tasks {
+			tasks[i].DescriptionRendered = RenderMarkdown(task.Description)
+		}
 
 		err := json.NewEncoder(w).Encode(tasks)
 		if err != nil {
@@ -153,6 +156,10 @@ func ColumnListView(
 		columns[i].Tasks = &[]Task{}
 		db.Order("position asc").Where(
 			"column_id = ?", column.ID).Preload("Tags").Find(columns[i].Tasks)
+
+		for j, task := range *(columns[i].Tasks) {
+			(*columns[i].Tasks)[j].DescriptionRendered = RenderMarkdown(task.Description)
+		}
 	}
 
 	err := json.NewEncoder(w).Encode(columns)
@@ -174,6 +181,10 @@ func ColumnView(
 	column.Tasks = &[]Task{}
 	db.Order("position asc").Where(
 		"column_id = ?", column.ID).Preload("Tags").Find(column.Tasks)
+
+	for i, task := range *column.Tasks {
+		(*column.Tasks)[i].DescriptionRendered = RenderMarkdown(task.Description)
+	}
 
 	err := json.NewEncoder(w).Encode(column)
 	if err != nil {
