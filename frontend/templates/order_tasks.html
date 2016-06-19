@@ -7,7 +7,7 @@
     <ul class="tasks-list row"
         dnd-list="tasks"
         dnd-drop="DndMoveToColumn(column, index, item)">
-        <li class="col-xs-6"
+        <li class="col-xs-4"
             ng-repeat="task in tasks"
             dnd-draggable="task"
             dnd-dragstart="parentScope.info.SelectedTask = task;"

@@ -94,7 +94,7 @@ function($scope, $log, $uibModal, $http, $httpParamSerializer) {
             animation: $scope.animationsEnabled,
             templateUrl: '/frontend/templates/order_tasks.html',
             controller: 'OrderTasksCtrl',
-            size: 'lg',
+            size: 'xlg',
             resolve: {
                 column: column,
                 parentScope: $scope,
