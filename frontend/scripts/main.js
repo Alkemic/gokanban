@@ -4,6 +4,22 @@ var App = angular.module(
     ['ngSanitize', 'ui.bootstrap', 'dndLists', 'ui.bootstrap.popover']
 );
 
+App.directive('enterSubmit', function () {
+    return {
+        restrict: 'A',
+        link: function (scope, elem, attrs) {
+            elem.bind('keydown', function(event) {
+                var code = event.keyCode || event.which;
+
+                if (code === 13 && event.ctrlKey) {
+                    event.preventDefault();
+                    scope.$apply(attrs.enterSubmit);
+                }
+            });
+        }
+    }
+});
+
 App.controller('KanbanCtrl',
 function($scope, $log, $uibModal, $http, $httpParamSerializer) {
     $scope.LoadColumns = function() {
