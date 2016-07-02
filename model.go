@@ -31,8 +31,8 @@ func init() {
 type Task struct {
 	gorm.Model
 
-	Title       string `sql:"size:255"`
-	Description string
+	Title               string `sql:"size:255"`
+	Description         string
 	DescriptionRendered string `gorm:"-"`
 
 	Tags []Tag `gorm:"many2many:task_tags;"`
