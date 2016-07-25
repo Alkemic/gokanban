@@ -15,7 +15,6 @@ func init() {
 	if err != nil {
 		log.Println(err)
 	}
-	db.DB()
 
 	// Then you could invoke `*sql.DB`'s functions with it
 	db.DB().Ping()
@@ -25,7 +24,10 @@ func init() {
 	// Disable table name's pluralization
 	db.SingularTable(true)
 
-	db.AutoMigrate(&Column{}, &Task{}, &Tag{})
+	db.AutoMigrate(&Column{}, &Task{}, &Tag{}, &TaskLog{})
+
+	db.Model(&TaskLog{}).AddForeignKey("task_id", "tasks(id)", "RESTRICT", "RESTRICT")
+	db.Model(&TaskLog{}).AddForeignKey("old_column_id", "columns(id)", "RESTRICT", "RESTRICT")
 }
 
 type Task struct {
@@ -57,4 +59,16 @@ type Column struct {
 	Position int `sql:"DEFAULT:0"`
 
 	Tasks *[]Task `sql:"-"`
+}
+
+type TaskLog struct {
+	gorm.Model
+
+	Action string
+
+	Task   Task
+	TaskID int // `sql:"type:int(10) unsigned;not null"`
+
+	OldColumn   Column
+	OldColumnId int // `sql:"type:int(10) unsigned;not null"`
 }

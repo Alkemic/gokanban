@@ -28,7 +28,6 @@ func init() {
 			}
 		},
 		Post: func(w http.ResponseWriter, r *http.Request, p map[string]string) {
-			db.LogMode(true)
 			r.ParseForm()
 
 			tags := []Tag{}
@@ -62,7 +61,7 @@ func init() {
 				"update task set position = (select max(position) "+
 					"from task where column_id = ?) + 1 where id = ?;",
 				column.ID, task.ID)
-			db.LogMode(false)
+			logTask(int(task.ID), int(column.ID), "create")
 		},
 	}
 
@@ -87,7 +86,7 @@ func init() {
 
 			_, okO := r.Form["Position"]
 			_, okC := r.Form["ColumnID"]
-			if okO && okC {
+			if okO && okC { //
 				newPosition, _ := strconv.Atoi(r.Form.Get("Position"))
 				newColumnID, _ := strconv.Atoi(r.Form.Get("ColumnID"))
 				if task.ColumnID != newColumnID {
@@ -101,6 +100,7 @@ func init() {
 						"update task set position = position + 1 "+
 							"where column_id = ? and position >= ?;",
 						newColumnID, newPosition)
+					logTask(id, task.ColumnID, "move column")
 				} else {
 					if newPosition > task.Position {
 						// move task between old and new position up
@@ -116,6 +116,7 @@ func init() {
 							where column_id = ? and position <= ? and
 							position >= ?;`,
 							task.ColumnID, task.Position, newPosition)
+						logTask(id, task.ColumnID, "move position")
 					}
 					// nop when newPosition == task.Position
 				}
@@ -125,6 +126,7 @@ func init() {
 				if _, ok := r.Form["ColumnID"]; ok {
 					task.ColumnID, _ = strconv.Atoi(r.Form.Get("ColumnID"))
 				}
+				logTask(id, task.ColumnID, "update")
 			}
 			if _, ok := r.Form["Title"]; ok {
 				task.Title = r.Form.Get("Title")
@@ -146,6 +148,7 @@ func init() {
 			if err != nil {
 				log.Println(err)
 			}
+			logTask(id, 0, "delete")
 		},
 	}
 

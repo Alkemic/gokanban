@@ -59,3 +59,7 @@ func RenderMarkdown(text string) string {
 		[]byte(text), renderer, commonExtensions,
 	))
 }
+
+func logTask(id, cId int, a string) {
+	db.Save(&TaskLog{TaskID: id, OldColumnId: cId, Action: a})
+}
