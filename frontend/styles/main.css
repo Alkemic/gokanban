@@ -65,6 +65,10 @@ html, body{
     overflow: hidden;
     word-break: break-all;
 }
+.task .panel-body label {
+    margin-bottom: 0px;
+    font-weight: normal;
+}
 .task .panel-body p {
     margin: 0 0 5px 0;
 }

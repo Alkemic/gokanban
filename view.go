@@ -84,9 +84,13 @@ func init() {
 
 			db.Where("id = ?", id).Find(&task)
 
+			_, okB := r.Form["checkId"]
 			_, okO := r.Form["Position"]
 			_, okC := r.Form["ColumnID"]
-			if okO && okC { //
+			if okB { // we are toggling checkbox
+				checkId, _ := strconv.Atoi(r.Form.Get("checkId"))
+				task.Description = toggleCheckbox(task.Description, checkId)
+			} else if okO && okC { //
 				newPosition, _ := strconv.Atoi(r.Form.Get("Position"))
 				newColumnID, _ := strconv.Atoi(r.Form.Get("ColumnID"))
 				if task.ColumnID != newColumnID {
@@ -155,6 +159,7 @@ func init() {
 	ColumnListEndPoint = RESTEndPoint{
 		Get: func(w http.ResponseWriter, r *http.Request, p map[string]string) {
 			columns := []Column{}
+
 			db.Order("position asc").Find(&columns)
 
 			for i, column := range columns {
@@ -164,8 +169,9 @@ func init() {
 					Preload("Tags").Find(columns[i].Tasks)
 
 				for j, task := range *(columns[i].Tasks) {
-					(*columns[i].Tasks)[j].DescriptionRendered = RenderMarkdown(task.Description)
+					(*columns[i].Tasks)[j].DescriptionRendered = RenderMarkdown(prepareCheckboxes(task.Description, task.ID))
 				}
+
 			}
 
 			err := json.NewEncoder(w).Encode(columns)
@@ -188,7 +194,7 @@ func init() {
 				Preload("Tags").Find(column.Tasks)
 
 			for i, task := range *column.Tasks {
-				(*column.Tasks)[i].DescriptionRendered = RenderMarkdown(task.Description)
+				(*column.Tasks)[i].DescriptionRendered = RenderMarkdown(prepareCheckboxes(task.Description, task.ID))
 			}
 
 			err := json.NewEncoder(w).Encode(column)

@@ -84,7 +84,7 @@
                                     </h3>
                                 </div>
                                 <div class="panel-body" ng-if="task.Description || task.Tags.length">
-                                    <span ng-bind-html="task.DescriptionRendered"></span>
+                                    <span ng-bind-html="task.DescriptionRendered | trustHtml" compile-template></span>
                                     <div class="tags" ng-if="task.Tags.length">
                                         <span class="label label-primary"
                                             ng-repeat="tag in task.Tags">
