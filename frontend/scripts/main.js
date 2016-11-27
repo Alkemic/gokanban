@@ -139,7 +139,8 @@ function($scope, $log, $uibModal, $http, $httpParamSerializer) {
         });
     };
 
-    $scope.CheckToggle = function(taskId, checkId) {
+    $scope.CheckToggle = function(taskId, checkId, event) {
+        event.preventDefault();
         $scope.loading = true;
         $http({
             url: '/task/' + taskId + '/',

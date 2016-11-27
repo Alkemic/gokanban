@@ -29,10 +29,8 @@ const (
 		blackfriday.EXTENSION_DEFINITION_LISTS |
 		blackfriday.EXTENSION_HARD_LINE_BREAK
 
-	checked = "$1* <label ng-click=\"CheckToggle({params})\"><input type=\"checkbox\" " +
-		"checked=\"checked\" />$2</label>"
-	normal = "$1* <label ng-click=\"CheckToggle({params})\"><input type=\"checkbox\" " +
-		"/>$2</label>"
+	checked = `$1* <label ng-click="CheckToggle({params}, $$event)"><input type="checkbox" checked="checked" />$2</label>`
+	normal  = `$1* <label ng-click="CheckToggle({params}, $$event)""><input type="checkbox" />$2</label>`
 )
 
 var (
