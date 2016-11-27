@@ -85,6 +85,11 @@
                                 </div>
                                 <div class="panel-body" ng-if="task.Description || task.Tags.length">
                                     <span ng-bind-html="task.DescriptionRendered | trustHtml" compile-template></span>
+                                    <div class="progress" ng-if="task.TaskProgress">
+                                        <div class="progress-bar" role="progressbar" ng-style="{width: 100*(task.TaskProgress.Done/(task.TaskProgress.ToDo + task.TaskProgress.Done)) + '%'}">
+                                            <span>{{ task.TaskProgress.Done }}/{{ task.TaskProgress.ToDo + task.TaskProgress.Done }}</span>
+                                        </div>
+                                    </div>
                                     <div class="tags" ng-if="task.Tags.length">
                                         <span class="label label-primary"
                                             ng-repeat="tag in task.Tags">

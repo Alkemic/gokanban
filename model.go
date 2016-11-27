@@ -37,6 +37,8 @@ type Task struct {
 	Description         string
 	DescriptionRendered string `gorm:"-"`
 
+	TaskProgress map[string]int `gorm:"-"`
+
 	Tags []Tag `gorm:"many2many:task_tags;"`
 
 	Column   *Column

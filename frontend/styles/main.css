@@ -72,6 +72,18 @@ html, body{
 .task .panel-body p {
     margin: 0 0 5px 0;
 }
+.task .panel-body .progress {
+    height: 17px;
+    margin: 3px 0;
+    position: relative;
+}
+.task .panel-body .progress span {
+    position: absolute;
+    display: block;
+    width: 100%;
+    color: black;
+    font-size: 11px;
+}
 .task .panel-body ul, .task .panel-body ol {
     padding-left: 20px;
 }

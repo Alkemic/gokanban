@@ -170,6 +170,7 @@ func init() {
 
 				for j, task := range *(columns[i].Tasks) {
 					(*columns[i].Tasks)[j].DescriptionRendered = RenderMarkdown(prepareCheckboxes(task.Description, task.ID))
+					(*columns[i].Tasks)[j].TaskProgress = calculateTaskProgress(task.Description)
 				}
 
 			}
@@ -195,6 +196,7 @@ func init() {
 
 			for i, task := range *column.Tasks {
 				(*column.Tasks)[i].DescriptionRendered = RenderMarkdown(prepareCheckboxes(task.Description, task.ID))
+				(*column.Tasks)[i].TaskProgress = calculateTaskProgress(task.Description)
 			}
 
 			err := json.NewEncoder(w).Encode(column)

@@ -116,3 +116,27 @@ func TestToggleSingleCheckbox(t *testing.T) {
 		"It should only change first occurence",
 	)
 }
+
+func TestCalculateTaskProgress(t *testing.T) {
+	assert.Equal(
+		t, calculateTaskProgress("*[S] Foo bar"),
+		map[string]int(nil),
+	)
+
+	assert.Equal(
+		t, calculateTaskProgress("*[ ] Foo bar"),
+		map[string]int{"Done": 0, "ToDo": 1},
+	)
+	assert.Equal(
+		t, calculateTaskProgress("*[X] Foo bar"),
+		map[string]int{"Done": 1, "ToDo": 0},
+	)
+	assert.Equal(
+		t, calculateTaskProgress("*[X] Ham\n*[ ] Foo\n  *[X] Foo tar\n  *[ ] Foo rar"),
+		map[string]int{"Done": 2, "ToDo": 2},
+	)
+	assert.Equal(
+		t, calculateTaskProgress("*[X] Ham*[ ]Test\n*[ ] Foo\n  *[X] Foo tar*[ ]Test2\n  *[ ] Foo rar"),
+		map[string]int{"Done": 2, "ToDo": 2},
+	)
+}

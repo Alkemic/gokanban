@@ -115,3 +115,19 @@ func toggleCheckbox(t string, n int) string {
 		return s
 	})
 }
+
+func calculateTaskProgress(t string) map[string]int {
+	done, todo := 0, 0
+	checkedCheckboxRegexp.ReplaceAllStringFunc(
+		emptyCheckboxRegexp.ReplaceAllStringFunc(t, func(s string) string { todo++; return s }), func(s string) string { done++; return s },
+	)
+
+	if done+todo > 0 {
+		result := map[string]int{}
+		result["Done"] = done
+		result["ToDo"] = todo
+		return result
+	}
+
+	return nil
+}
