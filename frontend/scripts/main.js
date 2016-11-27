@@ -20,6 +20,27 @@ App.directive('enterSubmit', function () {
     }
 });
 
+App.directive('compileTemplate', function($compile, $parse){
+    return {
+        link: function(scope, element, attr){
+            var parsed = $parse(attr.ngBindHtml);
+            function getStringValue() {
+                return (parsed(scope) || '').toString();
+            }
+
+            scope.$watch(getStringValue, function() {
+                $compile(element, null, -9999)(scope);
+            });
+        }
+    }
+});
+
+App.filter('trustHtml', function($sce) {
+    return function(text) {
+        return $sce.trustAsHtml(text);
+    }
+});
+
 App.controller('KanbanCtrl',
 function($scope, $log, $uibModal, $http, $httpParamSerializer) {
     $scope.LoadColumns = function() {
@@ -115,6 +136,23 @@ function($scope, $log, $uibModal, $http, $httpParamSerializer) {
                 column: column,
                 parentScope: $scope,
             }
+        });
+    };
+
+    $scope.CheckToggle = function(taskId, checkId) {
+        $scope.loading = true;
+        $http({
+            url: '/task/' + taskId + '/',
+            method: 'PUT',
+            data: $httpParamSerializer({
+                checkId: checkId,
+            }),
+            headers: {'Content-Type': 'application/x-www-form-urlencoded'}
+        }).then(function(res) {
+            $scope.LoadColumns();
+        }, function() {
+            $scope.loading = false;
+            $scope.error = 'Something went wrong';
         });
     };
 });
