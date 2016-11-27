@@ -29,17 +29,17 @@ const (
 		blackfriday.EXTENSION_DEFINITION_LISTS |
 		blackfriday.EXTENSION_HARD_LINE_BREAK
 
-	checked = "* <label ng-click=\"CheckToggle({params})\"><input type=\"checkbox\" " +
-		"checked=\"checked\" />$1</label>"
-	normal = "* <label ng-click=\"CheckToggle({params})\"><input type=\"checkbox\" " +
-		"/>$1</label>"
+	checked = "$1* <label ng-click=\"CheckToggle({params})\"><input type=\"checkbox\" " +
+		"checked=\"checked\" />$2</label>"
+	normal = "$1* <label ng-click=\"CheckToggle({params})\"><input type=\"checkbox\" " +
+		"/>$2</label>"
 )
 
 var (
 	renderer blackfriday.Renderer
 
-	emptyCheckboxRegexp   = regexp.MustCompile(`(?m:^\s*\*\s?\[ \](.*)$)`)
-	checkedCheckboxRegexp = regexp.MustCompile(`(?mi:^\s*\*\s?\[x\](.*)$)`)
+	emptyCheckboxRegexp   = regexp.MustCompile(`(?m:^(\s*)\*\s?\[ \](.*)$)`)
+	checkedCheckboxRegexp = regexp.MustCompile(`(?mi:^(\s*)\*\s?\[x\](.*)$)`)
 	paramsRegexp          = regexp.MustCompile("({params})")
 	checkboxLineRegexp    = regexp.MustCompile(`(?mi:^\s*\*\s?\[[ |x]\](.*)$)`)
 	checkboxRegexp        = regexp.MustCompile(`(?i:\[[ |x]\])`)

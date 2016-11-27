@@ -44,6 +44,14 @@ func TestPrepareCheckboxes(t *testing.T) {
 			"* <label ng-click=\"CheckToggle(13, 2)\"><input type=\"checkbox\" checked=\"checked\" /> Field 2</label>",
 		"It should render two checkboxes, second checked for task id 13",
 	)
+
+	assert.Equal(
+		t, prepareCheckboxes("* [ ] Test\n  * [ ] Sub-test\n      * [ ] Sub-sub-test", 13),
+		"* <label ng-click=\"CheckToggle(13, 1)\"><input type=\"checkbox\" /> Test</label>\n"+
+			"  * <label ng-click=\"CheckToggle(13, 2)\"><input type=\"checkbox\" /> Sub-test</label>\n"+
+			"      * <label ng-click=\"CheckToggle(13, 3)\"><input type=\"checkbox\" /> Sub-sub-test</label>",
+		"Should return list with intendation",
+	)
 }
 
 func TestRenderMarkdown(t *testing.T) {
