@@ -29,18 +29,20 @@ const (
 		blackfriday.EXTENSION_DEFINITION_LISTS |
 		blackfriday.EXTENSION_HARD_LINE_BREAK
 
-	checked = `$1* <label ng-click="CheckToggle({params}, $$event)"><input type="checkbox" checked="checked" />$2</label>`
-	normal  = `$1* <label ng-click="CheckToggle({params}, $$event)""><input type="checkbox" />$2</label>`
+	checked  = `$1* <label ng-click="CheckToggle({params}, $$event)"><input type="checkbox" checked="checked" />$2</label>`
+	normal   = `$1* <label ng-click="CheckToggle({params}, $$event)"><input type="checkbox" />$2</label>`
+	disabled = `$1* ~~<input type="checkbox" disabled />$2`
 )
 
 var (
 	renderer blackfriday.Renderer
 
-	emptyCheckboxRegexp   = regexp.MustCompile(`(?m:^(\s*)\*\s?\[ \](.*)$)`)
-	checkedCheckboxRegexp = regexp.MustCompile(`(?mi:^(\s*)\*\s?\[x\](.*)$)`)
-	paramsRegexp          = regexp.MustCompile("({params})")
-	checkboxLineRegexp    = regexp.MustCompile(`(?mi:^\s*\*\s?\[[ |x]\](.*)$)`)
-	checkboxRegexp        = regexp.MustCompile(`(?i:\[[ |x]\])`)
+	emptyCheckboxRegexp    = regexp.MustCompile(`(?m:^(\s*)\*\s?\[ \](.*)$)`)
+	checkedCheckboxRegexp  = regexp.MustCompile(`(?mi:^(\s*)\*\s?\[x\](.*)$)`)
+	disabledCheckboxRegexp = regexp.MustCompile(`(?mi:^(\s*)\*\s?~~\[[ x]\](.*~~(.*)?)$)`)
+	paramsRegexp           = regexp.MustCompile("({params})")
+	checkboxLineRegexp     = regexp.MustCompile(`(?mi:^\s*\*\s?\[[ x]\](.*)$)`)
+	checkboxRegexp         = regexp.MustCompile(`(?i:\[[ x]\])`)
 )
 
 func init() {
@@ -67,8 +69,12 @@ func TimeTrackDecorator(f http.HandlerFunc) http.HandlerFunc {
 }
 
 func prepareCheckboxes(t string, id uint) (rend string) {
-	rend = checkedCheckboxRegexp.ReplaceAllString(
-		emptyCheckboxRegexp.ReplaceAllString(t, normal), checked,
+	rend = disabledCheckboxRegexp.ReplaceAllString(
+		checkedCheckboxRegexp.ReplaceAllString(
+			emptyCheckboxRegexp.ReplaceAllString(t, normal),
+			checked,
+		),
+		disabled,
 	)
 
 	i := 0

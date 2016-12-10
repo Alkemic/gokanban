@@ -9,15 +9,15 @@ import (
 func TestPrepareCheckboxes(t *testing.T) {
 	assert.Equal(
 		t, prepareCheckboxes("*[ ] Test", 13),
-		"* <label ng-click=\"CheckToggle(13, 1)\"><input type=\"checkbox\" /> Test</label>",
+		"* <label ng-click=\"CheckToggle(13, 1, $event)\"><input type=\"checkbox\" /> Test</label>",
 	)
 	assert.Equal(
 		t, prepareCheckboxes("* [ ] Test", 13),
-		"* <label ng-click=\"CheckToggle(13, 1)\"><input type=\"checkbox\" /> Test</label>",
+		"* <label ng-click=\"CheckToggle(13, 1, $event)\"><input type=\"checkbox\" /> Test</label>",
 	)
 	assert.Equal(
 		t, prepareCheckboxes("* [ ]Test", 13),
-		"* <label ng-click=\"CheckToggle(13, 1)\"><input type=\"checkbox\" />Test</label>",
+		"* <label ng-click=\"CheckToggle(13, 1, $event)\"><input type=\"checkbox\" />Test</label>",
 	)
 	assert.Equal(
 		t, prepareCheckboxes("* [] Test", 13),
@@ -26,30 +26,35 @@ func TestPrepareCheckboxes(t *testing.T) {
 
 	assert.Equal(
 		t, prepareCheckboxes("* [x] Test", 13),
-		"* <label ng-click=\"CheckToggle(13, 1)\"><input type=\"checkbox\" checked=\"checked\" /> Test</label>",
+		"* <label ng-click=\"CheckToggle(13, 1, $event)\"><input type=\"checkbox\" checked=\"checked\" /> Test</label>",
 	)
 	assert.Equal(
 		t, prepareCheckboxes("*[x]Test", 13),
-		"* <label ng-click=\"CheckToggle(13, 1)\"><input type=\"checkbox\" checked=\"checked\" />Test</label>",
+		"* <label ng-click=\"CheckToggle(13, 1, $event)\"><input type=\"checkbox\" checked=\"checked\" />Test</label>",
+	)
+
+	assert.Equal(
+		t, prepareCheckboxes("* ~~[x]Spam~~\n* ~~[x] Ham~~", 13),
+		"* ~~<input type=\"checkbox\" disabled />Spam~~\n* ~~<input type=\"checkbox\" disabled /> Ham~~",
 	)
 
 	assert.Equal(
 		t, prepareCheckboxes("*[ ] Test*[x]Test", 13),
-		"* <label ng-click=\"CheckToggle(13, 1)\"><input type=\"checkbox\" /> Test*[x]Test</label>",
+		"* <label ng-click=\"CheckToggle(13, 1, $event)\"><input type=\"checkbox\" /> Test*[x]Test</label>",
 	)
 
 	assert.Equal(
 		t, prepareCheckboxes("*[ ] Foo bar\n*[x] Field 2", 13),
-		"* <label ng-click=\"CheckToggle(13, 1)\"><input type=\"checkbox\" /> Foo bar</label>\n"+
-			"* <label ng-click=\"CheckToggle(13, 2)\"><input type=\"checkbox\" checked=\"checked\" /> Field 2</label>",
+		"* <label ng-click=\"CheckToggle(13, 1, $event)\"><input type=\"checkbox\" /> Foo bar</label>\n"+
+			"* <label ng-click=\"CheckToggle(13, 2, $event)\"><input type=\"checkbox\" checked=\"checked\" /> Field 2</label>",
 		"It should render two checkboxes, second checked for task id 13",
 	)
 
 	assert.Equal(
 		t, prepareCheckboxes("* [ ] Test\n  * [ ] Sub-test\n      * [ ] Sub-sub-test", 13),
-		"* <label ng-click=\"CheckToggle(13, 1)\"><input type=\"checkbox\" /> Test</label>\n"+
-			"  * <label ng-click=\"CheckToggle(13, 2)\"><input type=\"checkbox\" /> Sub-test</label>\n"+
-			"      * <label ng-click=\"CheckToggle(13, 3)\"><input type=\"checkbox\" /> Sub-sub-test</label>",
+		"* <label ng-click=\"CheckToggle(13, 1, $event)\"><input type=\"checkbox\" /> Test</label>\n"+
+			"  * <label ng-click=\"CheckToggle(13, 2, $event)\"><input type=\"checkbox\" /> Sub-test</label>\n"+
+			"      * <label ng-click=\"CheckToggle(13, 3, $event)\"><input type=\"checkbox\" /> Sub-sub-test</label>",
 		"Should return list with intendation",
 	)
 }
@@ -141,6 +146,10 @@ func TestCalculateTaskProgress(t *testing.T) {
 	)
 	assert.Equal(
 		t, calculateTaskProgress("*[X] Ham\n*[ ] Foo\n  *[X] Foo tar\n  *[ ] Foo rar"),
+		map[string]int{"Done": 2, "ToDo": 2},
+	)
+	assert.Equal(
+		t, calculateTaskProgress("*[X] Ham\n*[ ] Foo\n  *[X] Foo tar\n  *[ ] Foo rar\n  * ~~[ ] Foo lol~~"),
 		map[string]int{"Done": 2, "ToDo": 2},
 	)
 	assert.Equal(
