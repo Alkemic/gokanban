@@ -25,13 +25,11 @@ func main() {
 	http.Handle("/frontend/", serveStatic)
 
 	TaskRouting := RegexpHandler{}
-	TaskRouting.HandleFunc(`^/task/$`, TaskListEndPoint.Dispatch)
-	TaskRouting.HandleFunc(`^/task/(?P<id>\d+)/$`, TaskEndPoint.Dispatch)
+	TaskRouting.HandleFunc(`^/task/((?P<id>\d+)/)?$`, TaskEndPoint.Dispatch)
 	http.HandleFunc("/task/", TimeTrackDecorator(TaskRouting.ServeHTTP))
 
 	ColumnRouting := RegexpHandler{}
-	ColumnRouting.HandleFunc(`^/column/$`, ColumnListEndPoint.Dispatch)
-	ColumnRouting.HandleFunc(`^/column/(?P<id>\d+)/$`, ColumnEndPoint.Dispatch)
+	ColumnRouting.HandleFunc(`^/column/((?P<id>\d+)/)?$`, ColumnEndPoint.Dispatch)
 	http.HandleFunc("/column/", TimeTrackDecorator(ColumnRouting.ServeHTTP))
 
 	http.HandleFunc("/",

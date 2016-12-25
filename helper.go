@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"regexp"
+	"strings"
 	"time"
 
 	"github.com/russross/blackfriday"
@@ -134,4 +135,70 @@ func calculateTaskProgress(t string) map[string]int {
 	}
 
 	return nil
+}
+
+func prepareTags(s string) (tags []Tag) {
+	for _, value := range strings.Split(s, ",") {
+		if value == "" {
+			continue
+		}
+
+		tag := Tag{}
+		db.FirstOrCreate(&tag, Tag{Name: strings.TrimSpace(value)})
+		tags = append(tags, tag)
+	}
+
+	return tags
+}
+
+func taskToMap(task Task) map[string]interface{} {
+	return map[string]interface{}{
+		"ID":          task.ID,
+		"Title":       task.Title,
+		"Description": task.Description,
+		"Tags":        task.Tags,
+		"Column":      task.Column,
+		"ColumnID":    task.ColumnID,
+		"Position":    task.Position,
+
+		"CreatedAt": task.CreatedAt,
+		"DeletedAt": task.DeletedAt,
+		"UpdatedAt": task.UpdatedAt,
+
+		"DescriptionRendered": RenderMarkdown(prepareCheckboxes(task.Description, task.ID)),
+		"TaskProgress":        calculateTaskProgress(task.Description),
+	}
+}
+
+func columnToMap(column *Column) map[string]interface{} {
+	return map[string]interface{}{
+		"ID": (*column).ID,
+
+		"Name":  (*column).Name,
+		"Limit": (*column).Limit,
+
+		"Position": (*column).Position,
+
+		"CreatedAt": (*column).CreatedAt,
+		"DeletedAt": (*column).DeletedAt,
+		"UpdatedAt": (*column).UpdatedAt,
+	}
+}
+
+func loadTasksAsMap(tasks *[]Task) []map[string]interface{} {
+	tasksMap := make([]map[string]interface{}, 0)
+	for _, task := range *tasks {
+		tasksMap = append(tasksMap, taskToMap(task))
+	}
+
+	return tasksMap
+}
+
+func loadColumnsAsMap(columns *[]Column) []map[string]interface{} {
+	columnsMap := make([]map[string]interface{}, 0)
+	for _, column := range *columns {
+		columnsMap = append(columnsMap, columnToMap(&column))
+	}
+
+	return columnsMap
 }
