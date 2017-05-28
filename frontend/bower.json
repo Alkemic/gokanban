@@ -22,6 +22,7 @@
     "bootstrap": "3.3.6",
     "angular-bootstrap": "1.1.2",
     "angular-resource": "1.5.0",
-    "angular-drag-and-drop-lists": "1.4.0"
+    "angular-drag-and-drop-lists": "1.4.0",
+    "angular-sanitize": "1.5.11"
   }
 }
