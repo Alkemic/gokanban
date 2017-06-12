@@ -103,7 +103,7 @@ html, body{
     cursor: pointer;
 }
 .tasks-container{
-    padding: 0 !importatnt;
+    padding: 0 !important;
 }
 .tasks-list {
     padding: 8px;
