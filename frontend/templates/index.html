@@ -51,66 +51,76 @@
                     </tr>
                 </thead>
                 <tr>
-                    <td ng-repeat="column in columns" class="tasks-container">
-                        <ul class="tasks-list"
-                            dnd-list="column.Tasks"
-                            dnd-drop="DndMoveToColumn(column, index, item)">
-                            <li class="task panel panel-default"
-                                ng-repeat="task in column.Tasks | filter:searchPhrase | limitTo:column.Limit"
-                                dnd-draggable="task"
-                                dnd-dragstart="info.SelectedTask = task;"
-                                dnd-effect-allowed="move"
-                                dnd-moved="list.splice($index, 1);"
-                                ng-class="{'selected': models.selected === task}">
-                                <div class="panel-heading">
-                                    <h3 class="panel-title">
-                                        {{task.Title}}
-                                        <span class="pull-right">
-                                            <div class="btn-group" uib-dropdown is-open="status.isopen">
-                                                <i class="menu glyphicon glyphicon-menu-hamburger"
-                                                    uib-dropdown-toggle
-                                                    ng-disabled="disabled"></i>
-                                                <ul uib-dropdown-menu role="menu"  aria-labelledby="simple-btn-keyboard-nav">
-                                                    <li role="menuitem"><a ng-click="AddEditTask({task: task})">
-                                                        <i class="glyphicon glyphicon-edit"></i> Edit</a>
-                                                    </li>
-                                                    <li class="divider"></li>
-                                                    <li role="menuitem">
-                                                        <a ng-click="DeleteTask(task)"><i class="glyphicon glyphicon-trash"></i> Delete</a>
-                                                    </li>
-                                                </ul>
-                                            </div>
-                                        </span>
-                                    </h3>
-                                </div>
-                                <div class="panel-body" ng-if="task.Description || task.Tags.length">
-                                    <span ng-bind-html="task.DescriptionRendered | trustHtml" compile-template></span>
-                                    <div class="progress" ng-if="task.TaskProgress">
-                                        <div class="progress-bar" role="progressbar" ng-style="{width: 100*(task.TaskProgress.Done/(task.TaskProgress.ToDo + task.TaskProgress.Done)) + '%'}">
-                                            <span>{{ task.TaskProgress.Done }}/{{ task.TaskProgress.ToDo + task.TaskProgress.Done }}</span>
-                                        </div>
-                                    </div>
-                                    <div class="tags" ng-if="task.Tags.length">
-                                        <span class="label label-primary"
-                                            ng-repeat="tag in task.Tags">
-                                            {{tag.Name}}
-                                        </span>
-                                    </div>
-                                </div>
-                            </li>
-                        </ul>
-                    </td>
+                    <td ng-repeat="column in columns"
+                        class="tasks-container"
+                        ng-include="'list.html'"></td>
                 </tr>
             </table>
 
         </div><!-- /.container -->
     </div><!-- /#main -->
 
+    <script type="text/ng-template" id="task.html">
+        <div class="panel-heading">
+            <h3 class="panel-title">
+                {{task.Title}}
+                <span class="pull-right">
+                    <div class="btn-group" uib-dropdown is-open="status.isopen">
+                        <i class="menu glyphicon glyphicon-menu-hamburger"
+                            uib-dropdown-toggle
+                            ng-disabled="disabled"></i>
+                        <ul uib-dropdown-menu role="menu"  aria-labelledby="simple-btn-keyboard-nav">
+                            <li role="menuitem"><a ng-click="AddEditTask({task: task})">
+                                <i class="glyphicon glyphicon-edit"></i> Edit</a>
+                            </li>
+                            <li class="divider"></li>
+                            <li role="menuitem">
+                                <a ng-click="DeleteTask(task)"><i class="glyphicon glyphicon-trash"></i> Delete</a>
+                            </li>
+                        </ul>
+                    </div>
+                </span>
+            </h3>
+        </div>
+        <div class="panel-body" ng-if="task.Description || task.Tags.length">
+            <span ng-bind-html="task.DescriptionRendered | trustHtml" compile-template></span>
+            <div class="progress" ng-if="task.TaskProgress">
+                <div class="progress-bar"
+                    role="progressbar"
+                    ng-style="{width: 100*(task.TaskProgress.Done/(task.TaskProgress.ToDo + task.TaskProgress.Done)) + '%'}">
+                    <span>{{ task.TaskProgress.Done }}/{{ task.TaskProgress.ToDo + task.TaskProgress.Done }}</span>
+                </div>
+            </div>
+            <div class="tags" ng-if="task.Tags.length">
+                <span class="label label-primary"
+                    ng-repeat="tag in task.Tags">
+                    {{tag.Name}}
+                </span>
+            </div>
+        </div>
+    </script>
+
+    <script type="text/ng-template" id="list.html">
+        <ul dnd-list="column.Tasks"
+            class="tasks-list"
+            dnd-drop="DndMoveToColumn(column, index, item)">
+            <li ng-repeat="task in column.Tasks | filter:searchPhrase | limitTo:column.Limit"
+                dnd-draggable="task"
+                dnd-effect-allowed="move"
+                dnd-moved="column.Tasks.splice($index, 1)"
+                dnd-dragstart="info.SelectedTask = task;"
+                dnd-draggable="task"
+                ng-class="{selected: models.selected === task}"
+                class="task panel panel-default"
+                ng-include="'task.html'"></li>
+            </li>
+        </ul>
+    </script>
+
     <script src="/frontend/node_modules/jquery/dist/jquery.min.js"></script>
     <script src="/frontend/node_modules/angular/angular.min.js"></script>
     <script src="/frontend/node_modules/angular-drag-and-drop-lists/angular-drag-and-drop-lists.js"></script>
     <script src="/frontend/node_modules/angular-ui-bootstrap/dist/ui-bootstrap-tpls.js"></script>
-
     <script src="/frontend/node_modules/angular-sanitize/angular-sanitize.min.js"></script>
 
     <script src="/frontend/scripts/main.js"></script>
