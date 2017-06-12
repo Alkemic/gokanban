@@ -1,14 +1,17 @@
 {
   "name": "go-kanban",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "GoKanaban frontend",
   "repository": "http://github.com/Alkemic/gokanban",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
   "author": "Daniel Alkemic Czuba <alkemic7@gmail.com>",
   "license": "MIT",
   "dependencies": {
-    "bower": "1.7.7"
+    "angular": "1.5.11",
+    "angular-drag-and-drop-lists": "1.4.0",
+    "angular-resource": "1.5.11",
+    "angular-sanitize": "1.5.11",
+    "angular-ui-bootstrap": "1.1.2",
+    "bootstrap": "3.3.6",
+    "jquery": "2.2.4"
   }
 }
