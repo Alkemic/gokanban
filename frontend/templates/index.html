@@ -61,9 +61,13 @@
     </div><!-- /#main -->
 
     <script type="text/ng-template" id="task.html">
-        <div class="panel-heading">
+        <div class="panel-heading"
+            ng-style="{
+                background: task.Color ? hexToRgbA(task.Color, 0.3) : null,
+                borderColor: task.Color ? hexToRgbA(task.Color, 0.6) : null
+            }">
             <h3 class="panel-title">
-                {{task.Title}}
+                {{ task.Title }}
             </h3>
             <div class="btn-group" uib-dropdown is-open="status.isopen">
                 <i class="menu glyphicon glyphicon-menu-hamburger"
@@ -110,6 +114,10 @@
                 dnd-draggable="task"
                 ng-class="{selected: models.selected === task}"
                 class="task panel panel-default"
+                ng-style="{
+                    background: task.Color ? hexToRgbA(task.Color, 0.3) : null,
+                    borderColor: task.Color ? hexToRgbA(task.Color, 0.6) : null
+                }"
                 ng-include="'task.html'"></li>
             </li>
         </ul>

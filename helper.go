@@ -160,6 +160,7 @@ func taskToMap(task Task) map[string]interface{} {
 		"Column":      task.Column,
 		"ColumnID":    task.ColumnID,
 		"Position":    task.Position,
+		"Color":       task.Color,
 
 		"CreatedAt": task.CreatedAt,
 		"DeletedAt": task.DeletedAt,

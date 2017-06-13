@@ -62,6 +62,7 @@ func TaskEndPointPost(w http.ResponseWriter, r *http.Request, p map[string]strin
 		Tags:        prepareTags(r.Form.Get("TagsString")),
 		Column:      &column,
 		ColumnID:    int(column.ID),
+		Color:       r.Form.Get("Color"),
 	}
 	db.Save(&task)
 	db.Exec(
@@ -120,21 +121,26 @@ func TaskEndPointPut(w http.ResponseWriter, r *http.Request, p map[string]string
 		}
 		task.Position = newPosition
 		task.ColumnID = newColumnID
+	} else if okC {
+		task.ColumnID, _ = strconv.Atoi(r.Form.Get("ColumnID"))
+		logTask(id, task.ColumnID, "update column")
 	} else {
-		if _, ok := r.Form["ColumnID"]; ok {
-			task.ColumnID, _ = strconv.Atoi(r.Form.Get("ColumnID"))
+		if _, ok := r.Form["Title"]; ok {
+			task.Title = r.Form.Get("Title")
 		}
-		logTask(id, task.ColumnID, "update")
-	}
-	if _, ok := r.Form["Title"]; ok {
-		task.Title = r.Form.Get("Title")
-	}
-	if _, ok := r.Form["Description"]; ok {
-		task.Description = r.Form.Get("Description")
-	}
-	if _, ok := r.Form["TagsString"]; ok {
-		db.Exec("DELETE FROM task_tags WHERE task_id = ?", task.ID)
-		task.Tags = prepareTags(r.Form.Get("TagsString"))
+		if _, ok := r.Form["Description"]; ok {
+			task.Description = r.Form.Get("Description")
+		}
+		if _, ok := r.Form["TagsString"]; ok {
+			db.Exec("DELETE FROM task_tags WHERE task_id = ?", task.ID)
+			task.Tags = prepareTags(r.Form.Get("TagsString"))
+		}
+		if _, ok := r.Form["Color"]; ok {
+			task.Color = r.Form.Get("Color")
+		} else {
+			task.Color = ""
+		}
+		logTask(id, task.ColumnID, "update task")
 	}
 	db.Save(&task)
 }

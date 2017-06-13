@@ -43,6 +43,28 @@ App.filter('trustHtml', function($sce) {
 
 App.controller('KanbanCtrl',
 function($scope, $log, $uibModal, $http, $httpParamSerializer) {
+    $scope.colors = [
+    '#ff0000', '#ff3300', '#ff6600', '#ff9900', '#ffcc00', '#ffff00',
+    '#ccff00', '#99ff00', '#66ff00', '#33ff00', '#00ff00', '#00ff33',
+    '#00ff66', '#00ff99', '#00ffcc', '#00ffff', '#00ccff', '#0099ff',
+    '#0066ff', '#0033ff', '#0000ff', '#3300ff', '#6600ff', '#9900ff',
+    '#cc00ff', '#ff00ff', '#ff00cc', '#ff0099', '#ff0066', '#ff0033', '#000'];
+
+    $scope.hexToRgbA = function(hex, opacity) {
+        opacity = typeof opacity !== 'undefined' ? opacity : 1.0;
+        var c;
+        if (/^#([A-Fa-f0-9]{3}){1,2}$/.test(hex)) {
+            c = hex.substring(1).split('');
+            if (c.length== 3) {
+                c = [c[0], c[0], c[1], c[1], c[2], c[2]];
+            }
+            c = '0x'+c.join('');
+            return 'rgba(' + [(c>>16)&255, (c>>8)&255, c&255].join(',') + ', ' + opacity + ')';
+        }
+
+        throw new Error('Bad Hex');
+    }
+
     $scope.LoadColumns = function() {
         $scope.loading = true;
         $http.get('/column/')
@@ -162,6 +184,7 @@ App.controller('AddEditTaskCtrl', function(
     $scope, $uibModalInstance, $http, $httpParamSerializer,
     task, column, parentScope
 ) {
+    $scope.colors = parentScope.colors;
     $scope.column = column;
     $scope.task = task;
     $scope.form = angular.copy(task);
@@ -181,6 +204,7 @@ App.controller('AddEditTaskCtrl', function(
             Title: $scope.form.Title,
             Description: $scope.form.Description,
             TagsString: $scope.form.TagsString,
+            Color: $scope.form.Color,
         };
         if (column !== undefined) {
             data.ColumnID = column.ID;

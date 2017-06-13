@@ -36,6 +36,7 @@ type Task struct {
 	Title               string `sql:"size:255"`
 	Description         string
 	DescriptionRendered string `gorm:"-"`
+	Color               string `sql:"size:7"`
 
 	TaskProgress map[string]int `gorm:"-"`
 
