@@ -1,4 +1,4 @@
-html, body{
+html, body {
     height: 100%;
 }
 .main {
@@ -33,12 +33,6 @@ html, body{
     border-right: 0;
 }
 
-.panel-heading h3{
-    font-weight: bold;
-}
-.panel-body, .panel-heading{
-    padding: 5px;
-}
 .overlay {
     position: absolute;
     width: 100%;
@@ -53,15 +47,38 @@ html, body{
     width: 100px;
     height: 100px;
 }
-.overlay .spinner i{
+.overlay .spinner i {
     color: #fff;
     font-size: 100px;
 }
-.label:not(:last-child){
+.label:not(:last-child) {
     margin-right: 4px;
 }
 
+.task .panel-heading {
+    position: relative;
+    padding: 0;
+}
+.task .panel-heading h3.panel-title {
+    font-weight: bold;
+    margin-right: 18px;
+    padding: 5px;
+}
+.task .panel-heading div.btn-group {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+}
+.task .panel-heading i.menu {
+    cursor: pointer;
+    opacity: 0.6;
+}
+.task:hover .panel-heading i.menu {
+    transition: opacity 0.33s;
+    opacity: 1;
+}
 .task .panel-body {
+    padding: 5px;
     overflow: hidden;
     word-break: break-all;
 }
@@ -87,25 +104,17 @@ html, body{
 .task .panel-body ul, .task .panel-body ol {
     padding-left: 20px;
 }
-.task .panel-title i.menu {
-    cursor: pointer;
-    opacity: 0.6;
-}
-.task:hover .panel-title i.menu {
-    transition: opacity 0.33s;
-    opacity: 1;
-}
-.task .dropdown-menu>li>a{
+.task .dropdown-menu>li>a {
     padding: 3px 10px;
 }
 
 *[ng-click] {
     cursor: pointer;
 }
-.tasks-container{
+.tasks-container {
     padding: 0 !important;
 }
-.tasks-list {
+.tasks-container .tasks-list {
     padding: 8px;
     list-style: none;
     margin: 0;
@@ -125,16 +134,15 @@ html, body{
     background-color: #fefefe;
 
     border-radius: 4px;
-    -webkit-box-shadow: 0 1px 1px rgba(0,0,0,.05);
     box-shadow: 0 1px 1px rgba(0,0,0,.05);
 }
 
-li.selected {
+ul.tasks-list li.selected {
     background-color: #dff0d8;
     color: #3c763d;
 }
 
-.tasks-order ul.tasks-list li{
+.tasks-order ul.tasks-list li {
 
 }
 
@@ -143,13 +151,13 @@ li.selected {
     float: left;
 }
 
-.tasks-order ul.tasks-list li .panel-title{
+.tasks-order ul.tasks-list li .panel-title {
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
 }
 
-.tasks-order ul.tasks-list li .panel-disabled{
+.tasks-order ul.tasks-list li .panel-disabled {
     opacity: 0.4;
 }
 

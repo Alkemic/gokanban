@@ -64,23 +64,21 @@
         <div class="panel-heading">
             <h3 class="panel-title">
                 {{task.Title}}
-                <span class="pull-right">
-                    <div class="btn-group" uib-dropdown is-open="status.isopen">
-                        <i class="menu glyphicon glyphicon-menu-hamburger"
-                            uib-dropdown-toggle
-                            ng-disabled="disabled"></i>
-                        <ul uib-dropdown-menu role="menu"  aria-labelledby="simple-btn-keyboard-nav">
-                            <li role="menuitem"><a ng-click="AddEditTask({task: task})">
-                                <i class="glyphicon glyphicon-edit"></i> Edit</a>
-                            </li>
-                            <li class="divider"></li>
-                            <li role="menuitem">
-                                <a ng-click="DeleteTask(task)"><i class="glyphicon glyphicon-trash"></i> Delete</a>
-                            </li>
-                        </ul>
-                    </div>
-                </span>
             </h3>
+            <div class="btn-group" uib-dropdown is-open="status.isopen">
+                <i class="menu glyphicon glyphicon-menu-hamburger"
+                    uib-dropdown-toggle
+                    ng-disabled="disabled"></i>
+                <ul uib-dropdown-menu role="menu"  aria-labelledby="simple-btn-keyboard-nav">
+                    <li role="menuitem"><a ng-click="AddEditTask({task: task})">
+                        <i class="glyphicon glyphicon-edit"></i> Edit</a>
+                    </li>
+                    <li class="divider"></li>
+                    <li role="menuitem">
+                        <a ng-click="DeleteTask(task)"><i class="glyphicon glyphicon-trash"></i> Delete</a>
+                    </li>
+                </ul>
+            </div>
         </div>
         <div class="panel-body" ng-if="task.Description || task.Tags.length">
             <span ng-bind-html="task.DescriptionRendered | trustHtml" compile-template></span>
