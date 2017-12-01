@@ -12,11 +12,11 @@
     <link href="/frontend/styles/main.css" rel="stylesheet">
 </head>
 
-<body ng-controller="KanbanCtrl">
+<body ng-controller="KanbanCtrl" ng-class="{'modal-open': loading}">
+    <div class="overlay" ng-if="loading">
+        <div class="spinner"><i class="glyphicon glyphicon-refresh"></i></div>
+    </div>
     <div class="main">
-        <div class="overlay" ng-if="loading">
-            <div class="spinner"><i class="glyphicon glyphicon-refresh"></i></div>
-        </div>
         <nav class="navbar navbar-inverse">
             <div class="container-fluid">
                 <div class="navbar-header">
