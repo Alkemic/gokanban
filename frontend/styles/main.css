@@ -142,8 +142,12 @@ ul.tasks-list li.selected {
     color: #3c763d;
 }
 
-.tasks-order ul.tasks-list li {
+.tasks-order ul.tasks-list {
+    padding-left: 0;
+}
 
+.tasks-order ul.tasks-list li {
+    list-style: none;
 }
 
 .tasks-order ul.tasks-list li.dndPlaceholder {
