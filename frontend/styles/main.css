@@ -80,6 +80,9 @@ html, body {
     margin-right: 4px;
 }
 
+.task {
+    margin-bottom: 8px;
+}
 .task .panel-heading {
     position: relative;
     padding: 0;
@@ -137,7 +140,7 @@ html, body {
     cursor: pointer;
 }
 .tasks-container {
-    padding: 0 !important;
+    padding: 8px 8px 0 8px !important;
 }
 .tasks-container .tasks-list {
     padding: 8px;
@@ -150,43 +153,41 @@ html, body {
     opacity: 0.5;
 }
 
-.dndDragover .dndPlaceholder {
-    list-style: none;
+.dndDragover .dndPlaceholder div {
     height: 30px;
     border: 1px dashed #ddd;
     border-color: #ddd;
-    margin-bottom: 20px;
     background-color: #fefefe;
 
     border-radius: 4px;
     box-shadow: 0 1px 1px rgba(0,0,0,.05);
 }
 
-ul.tasks-list li.selected {
+.tasks-list div.selected {
     background-color: #dff0d8;
     color: #3c763d;
 }
 
-.tasks-order ul.tasks-list {
+.tasks-order div.tasks-list {
     padding-left: 0;
 }
 
-.tasks-order ul.tasks-list li {
-    list-style: none;
+.tasks-order div.tasks-list div.dndPlaceholder div {
+    display: block;
+    margin-bottom: 7px;
+    position: relative;
+    min-height: 1px;
+    padding-right: 15px !important;
+    padding-left: 15px !important;
 }
 
-.tasks-order ul.tasks-list li.dndPlaceholder {
-    width: 33.333%;
-    float: left;
-}
-
-.tasks-order ul.tasks-list li .panel-title {
+.tasks-order div.tasks-list > div .panel-title {
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
 }
 
-.tasks-order ul.tasks-list li .panel-disabled {
+.tasks-order div.tasks-list > div .panel-disabled {
     opacity: 0.4;
 }
 

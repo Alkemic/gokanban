@@ -53,7 +53,24 @@
                 <tr>
                     <td ng-repeat="column in columns"
                         class="tasks-container"
-                        ng-include="'list.html'"></td>
+                        dnd-list="column.Tasks"
+                        class="tasks-list"
+                        dnd-drop="DndMoveToColumn(column, index, item)">
+                        <div ng-repeat="task in column.Tasks | filter:searchPhrase | limitTo:column.Limit"
+                            dnd-draggable="task"
+                            dnd-effect-allowed="move"
+                            dnd-moved="column.Tasks.splice($index, 1)"
+                            dnd-dragstart="info.SelectedTask = task;"
+                            dnd-draggable="task"
+                            ng-class="{selected: models.selected === task}"
+                            class="task panel panel-default"
+                            ng-style="{
+                                background: task.Color ? hexToRgbA(task.Color, 0.3) : null,
+                                borderColor: task.Color ? hexToRgbA(task.Color, 0.6) : null
+                            }"
+                            ng-include="'task.html'"></div>
+                        <div class="dndPlaceholder task panel panel-default"></div>
+                    </td>
                 </tr>
             </table>
 
@@ -100,27 +117,6 @@
                 </span>
             </div>
         </div>
-    </script>
-
-    <script type="text/ng-template" id="list.html">
-        <ul dnd-list="column.Tasks"
-            class="tasks-list"
-            dnd-drop="DndMoveToColumn(column, index, item)">
-            <li ng-repeat="task in column.Tasks | filter:searchPhrase | limitTo:column.Limit"
-                dnd-draggable="task"
-                dnd-effect-allowed="move"
-                dnd-moved="column.Tasks.splice($index, 1)"
-                dnd-dragstart="info.SelectedTask = task;"
-                dnd-draggable="task"
-                ng-class="{selected: models.selected === task}"
-                class="task panel panel-default"
-                ng-style="{
-                    background: task.Color ? hexToRgbA(task.Color, 0.3) : null,
-                    borderColor: task.Color ? hexToRgbA(task.Color, 0.6) : null
-                }"
-                ng-include="'task.html'"></li>
-            </li>
-        </ul>
     </script>
 
     <script src="/frontend/node_modules/jquery/dist/jquery.min.js"></script>

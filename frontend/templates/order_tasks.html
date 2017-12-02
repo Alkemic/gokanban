@@ -4,10 +4,11 @@
 </div>
 
 <div class="modal-body tasks-order">
-    <ul class="tasks-list row"
+    <div class="tasks-list row"
         dnd-list="tasks"
         dnd-drop="DndMoveToColumn(column, index, item)">
-        <li class="col-xs-4"
+        <div class="dndPlaceholder col-xs-4"><div class="task panel panel-default">&nbsp;</div></div>
+        <div class="col-xs-4"
             ng-repeat="task in tasks"
             dnd-draggable="task"
             dnd-dragstart="parentScope.info.SelectedTask = task;"
@@ -15,12 +16,12 @@
             dnd-effect-allowed="move">
             <div class="task panel panel-default"
                 ng-class="{'panel-disabled': $index >= column.Limit}">
-                <div class="panel-heading" uib-popover-html="task.DescriptionRendered" popover-trigger="mouseenter">
+                <div class="panel-heading">
                     <h3 class="panel-title">
                         {{task.Title}}
                     </h3>
                 </div>
             </div>
-        </li>
-    </ul>
+        </div>
+    </div>
 </div>
