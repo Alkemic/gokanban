@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/jinzhu/gorm"
 	"github.com/russross/blackfriday"
 )
 
@@ -92,7 +93,7 @@ func RenderMarkdown(text string) (rendered string) {
 	))
 }
 
-func logTask(id, cId int, a string) {
+func logTask(db *gorm.DB, id, cId int, a string) {
 	db.Save(&TaskLog{TaskID: id, OldColumnId: cId, Action: a})
 }
 
@@ -137,7 +138,7 @@ func calculateTaskProgress(t string) map[string]int {
 	return nil
 }
 
-func prepareTags(s string) (tags []Tag) {
+func prepareTags(db *gorm.DB, s string) (tags []Tag) {
 	for _, value := range strings.Split(s, ",") {
 		if value == "" {
 			continue

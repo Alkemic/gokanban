@@ -23,11 +23,7 @@ func (r *Request) GetParams(route route) map[string]string {
 
 type HandlerFunc func(http.ResponseWriter, *http.Request, map[string]string)
 
-func (f HandlerFunc) ServeHTTP(
-	w http.ResponseWriter,
-	r *http.Request,
-	p map[string]string,
-) {
+func (f HandlerFunc) ServeHTTP(w http.ResponseWriter, r *http.Request, p map[string]string) {
 	f(w, r, p)
 }
 

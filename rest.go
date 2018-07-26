@@ -13,11 +13,7 @@ type RESTEndPoint struct {
 	Options ViewFunction
 }
 
-func (rest *RESTEndPoint) Dispatch(
-	w http.ResponseWriter,
-	r *http.Request,
-	p map[string]string,
-) {
+func (rest *RESTEndPoint) Dispatch(w http.ResponseWriter, r *http.Request, p map[string]string) {
 	if r.Method == "GET" && rest.Get != nil {
 		rest.Get(w, r, p)
 	} else if r.Method == "POST" && rest.Post != nil {

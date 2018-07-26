@@ -11,12 +11,12 @@ import (
 var ColumnEndPoint,
 	TaskEndPoint RESTEndPoint
 
-func TaskEndPointGet(w http.ResponseWriter, r *http.Request, p map[string]string) {
+func (a *app) TaskEndPointGet(w http.ResponseWriter, r *http.Request, p map[string]string) {
 	var err error
 
 	if p["id"] == "" {
 		tasks := []Task{}
-		db.Preload("Tags", "Column").Find(&tasks)
+		a.db.Preload("Tags", "Column").Find(&tasks)
 
 		tasksMap := loadTasksAsMap(&tasks)
 
@@ -25,7 +25,7 @@ func TaskEndPointGet(w http.ResponseWriter, r *http.Request, p map[string]string
 		id, _ := strconv.Atoi(p["id"])
 		task := Task{}
 
-		db.Where("id = ?", id).Preload("Tags", "Column").Find(&task)
+		a.db.Where("id = ?", id).Preload("Tags", "Column").Find(&task)
 		err = json.NewEncoder(w).Encode(taskToMap(task))
 	}
 
@@ -34,7 +34,7 @@ func TaskEndPointGet(w http.ResponseWriter, r *http.Request, p map[string]string
 	}
 }
 
-func TaskEndPointPost(w http.ResponseWriter, r *http.Request, p map[string]string) {
+func (a *app) TaskEndPointPost(w http.ResponseWriter, r *http.Request, p map[string]string) {
 	r.ParseForm()
 
 	tags := []Tag{}
@@ -44,40 +44,40 @@ func TaskEndPointPost(w http.ResponseWriter, r *http.Request, p map[string]strin
 		}
 
 		tag := Tag{}
-		db.FirstOrCreate(&tag, Tag{Name: strings.TrimSpace(value)})
+		a.db.FirstOrCreate(&tag, Tag{Name: strings.TrimSpace(value)})
 		tags = append(tags, tag)
 	}
 
 	column := Column{}
 	if _, ok := r.Form["ColumnID"]; ok {
 		ColumnID, _ := strconv.Atoi(r.Form.Get("ColumnID"))
-		db.Where("id = ?", ColumnID).Find(&column)
+		a.db.Where("id = ?", ColumnID).Find(&column)
 	} else {
-		db.FirstOrCreate(&column, Column{Position: 1})
+		a.db.FirstOrCreate(&column, Column{Position: 1})
 	}
 
 	task := Task{
 		Title:       r.Form.Get("Title"),
 		Description: r.Form.Get("Description"),
-		Tags:        prepareTags(r.Form.Get("TagsString")),
+		Tags:        prepareTags(a.db, r.Form.Get("TagsString")),
 		Column:      &column,
 		ColumnID:    int(column.ID),
 		Color:       r.Form.Get("Color"),
 	}
-	db.Save(&task)
-	db.Exec(
+	a.db.Save(&task)
+	a.db.Exec(
 		"update task set position = (select max(position) "+
 			"from task where column_id = ?) + 1 where id = ?;",
 		column.ID, task.ID)
-	logTask(int(task.ID), int(column.ID), "create")
+	logTask(a.db, int(task.ID), int(column.ID), "create")
 }
 
-func TaskEndPointPut(w http.ResponseWriter, r *http.Request, p map[string]string) {
+func (a *app) TaskEndPointPut(w http.ResponseWriter, r *http.Request, p map[string]string) {
 	id, _ := strconv.Atoi(p["id"])
 	task := Task{}
 	r.ParseForm()
 
-	db.Where("id = ?", id).Find(&task)
+	a.db.Where("id = ?", id).Find(&task)
 
 	_, okB := r.Form["checkId"]
 	_, okO := r.Form["Position"]
@@ -90,32 +90,32 @@ func TaskEndPointPut(w http.ResponseWriter, r *http.Request, p map[string]string
 		newColumnID, _ := strconv.Atoi(r.Form.Get("ColumnID"))
 		if task.ColumnID != newColumnID {
 			// remoce gap in old column
-			db.Exec(
+			a.db.Exec(
 				"update task set position = position - 1 "+
 					"where column_id = ? and position >= ?;",
 				task.ColumnID, task.Position)
 			// make space in new column
-			db.Exec(
+			a.db.Exec(
 				"update task set position = position + 1 "+
 					"where column_id = ? and position >= ?;",
 				newColumnID, newPosition)
-			logTask(id, task.ColumnID, "move column")
+			logTask(a.db, id, task.ColumnID, "move column")
 		} else {
 			if newPosition > task.Position {
 				// move task between old and new position up
-				db.Exec(
+				a.db.Exec(
 					`update task set position = position - 1
 							where column_id = ? and position <= ? and
 							position >= ?;`,
 					task.ColumnID, newPosition, task.Position)
 			} else if newPosition < task.Position {
 				// move task between old and new position down
-				db.Exec(
+				a.db.Exec(
 					`update task set position = position + 1
 							where column_id = ? and position <= ? and
 							position >= ?;`,
 					task.ColumnID, task.Position, newPosition)
-				logTask(id, task.ColumnID, "move position")
+				logTask(a.db, id, task.ColumnID, "move position")
 			}
 			// nop when newPosition == task.Position
 		}
@@ -123,7 +123,7 @@ func TaskEndPointPut(w http.ResponseWriter, r *http.Request, p map[string]string
 		task.ColumnID = newColumnID
 	} else if okC {
 		task.ColumnID, _ = strconv.Atoi(r.Form.Get("ColumnID"))
-		logTask(id, task.ColumnID, "update column")
+		logTask(a.db, id, task.ColumnID, "update column")
 	} else {
 		if _, ok := r.Form["Title"]; ok {
 			task.Title = r.Form.Get("Title")
@@ -132,43 +132,43 @@ func TaskEndPointPut(w http.ResponseWriter, r *http.Request, p map[string]string
 			task.Description = r.Form.Get("Description")
 		}
 		if _, ok := r.Form["TagsString"]; ok {
-			db.Exec("DELETE FROM task_tags WHERE task_id = ?", task.ID)
-			task.Tags = prepareTags(r.Form.Get("TagsString"))
+			a.db.Exec("DELETE FROM task_tags WHERE task_id = ?", task.ID)
+			task.Tags = prepareTags(a.db, r.Form.Get("TagsString"))
 		}
 		if _, ok := r.Form["Color"]; ok {
 			task.Color = r.Form.Get("Color")
 		} else {
 			task.Color = ""
 		}
-		logTask(id, task.ColumnID, "update task")
+		logTask(a.db, id, task.ColumnID, "update task")
 	}
-	db.Save(&task)
+	a.db.Save(&task)
 }
 
-func TaskEndPointDelete(w http.ResponseWriter, r *http.Request, p map[string]string) {
+func (a *app) TaskEndPointDelete(w http.ResponseWriter, r *http.Request, p map[string]string) {
 	id, _ := strconv.Atoi(p["id"])
-	db.Where("id = ?", id).Delete(&Task{})
+	a.db.Where("id = ?", id).Delete(&Task{})
 
 	err := json.NewEncoder(w).Encode(map[string]string{"status": "ok"})
 	if err != nil {
 		log.Println(err)
 	}
-	logTask(id, 0, "delete")
+	logTask(a.db, id, 0, "delete")
 }
 
-func ColumnListEndPointGet(w http.ResponseWriter, r *http.Request, p map[string]string) {
+func (a *app) ColumnListEndPointGet(w http.ResponseWriter, r *http.Request, p map[string]string) {
 	var err error
 	tasks := []Task{}
 
 	if p["id"] == "" {
 		columns := []Column{}
-		db.Order("position asc").Find(&columns)
+		a.db.Order("position asc").Find(&columns)
 
 		columnsMap := loadColumnsAsMap(&columns)
 
 		for i, column := range columnsMap {
 			tasks = []Task{}
-			db.Order("position asc").Where("column_id = ?", column["ID"]).
+			a.db.Order("position asc").Where("column_id = ?", column["ID"]).
 				Preload("Tags").Find(&tasks)
 
 			columnsMap[i]["Tasks"] = loadTasksAsMap(&tasks)
@@ -179,10 +179,10 @@ func ColumnListEndPointGet(w http.ResponseWriter, r *http.Request, p map[string]
 		column := Column{}
 		id, _ := strconv.Atoi(p["id"])
 
-		db.Where("id = ?", id).Find(&column)
+		a.db.Where("id = ?", id).Find(&column)
 		columnMap := columnToMap(&column)
 
-		db.Order("position asc").
+		a.db.Order("position asc").
 			Where("column_id = ?", column.ID).
 			Preload("Tags").Find(&tasks)
 
@@ -193,18 +193,5 @@ func ColumnListEndPointGet(w http.ResponseWriter, r *http.Request, p map[string]
 
 	if err != nil {
 		log.Println(err)
-	}
-}
-
-func init() {
-	TaskEndPoint = RESTEndPoint{
-		Get:    TaskEndPointGet,
-		Put:    TaskEndPointPut,
-		Delete: TaskEndPointDelete,
-		Post:   TaskEndPointPost,
-	}
-
-	ColumnEndPoint = RESTEndPoint{
-		Get: ColumnListEndPointGet,
 	}
 }
