@@ -51,22 +51,25 @@ func init() {
 	renderer = blackfriday.HtmlRenderer(commonHtmlFlags, "", "")
 }
 
-func TimeTrack(start time.Time, name string) {
+func TimeTrack(logger *log.Logger, start time.Time, name string) {
 	elapsed := time.Since(start)
-	log.Printf("%s took %s", name, elapsed)
+	logger.Printf("%s took %s", name, elapsed)
 }
 
-func TimeTrackDecorator(f http.HandlerFunc) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		defer TimeTrack(
-			time.Now(),
-			fmt.Sprintf(
-				"%4s %s",
-				r.Method,
-				r.RequestURI,
-			),
-		)
-		f(w, r)
+func TimeTrackDecorator(logger *log.Logger) func(http.HandlerFunc) http.HandlerFunc {
+	return func(f http.HandlerFunc) http.HandlerFunc {
+		return func(w http.ResponseWriter, r *http.Request) {
+			defer TimeTrack(
+				logger,
+				time.Now(),
+				fmt.Sprintf(
+					"%4s %s",
+					r.Method,
+					r.RequestURI,
+				),
+			)
+			f(w, r)
+		}
 	}
 }
 

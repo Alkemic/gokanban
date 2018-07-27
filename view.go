@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -30,7 +29,7 @@ func (a *app) TaskEndPointGet(w http.ResponseWriter, r *http.Request, p map[stri
 	}
 
 	if err != nil {
-		log.Println(err)
+		a.logger.Println(err)
 	}
 }
 
@@ -151,7 +150,7 @@ func (a *app) TaskEndPointDelete(w http.ResponseWriter, r *http.Request, p map[s
 
 	err := json.NewEncoder(w).Encode(map[string]string{"status": "ok"})
 	if err != nil {
-		log.Println(err)
+		a.logger.Println(err)
 	}
 	logTask(a.db, id, 0, "delete")
 }
@@ -192,6 +191,6 @@ func (a *app) ColumnListEndPointGet(w http.ResponseWriter, r *http.Request, p ma
 	}
 
 	if err != nil {
-		log.Println(err)
+		a.logger.Println(err)
 	}
 }

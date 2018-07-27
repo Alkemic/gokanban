@@ -5,29 +5,6 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
-// var db *gorm.DB
-
-// func init() {
-// 	var err error
-// 	db, err = gorm.Open("sqlite3", "./db.sqlite")
-// 	if err != nil {
-// 		log.Println(err)
-// 	}
-
-// 	// Then you could invoke `*sql.DB`'s functions with it
-// 	db.DB().Ping()
-// 	db.DB().SetMaxIdleConns(10)
-// 	db.DB().SetMaxOpenConns(100)
-
-// 	// Disable table name's pluralization
-// 	db.SingularTable(true)
-
-// 	db.AutoMigrate(&Column{}, &Task{}, &Tag{}, &TaskLog{})
-
-// 	db.Model(&TaskLog{}).AddForeignKey("task_id", "tasks(id)", "RESTRICT", "RESTRICT")
-// 	db.Model(&TaskLog{}).AddForeignKey("old_column_id", "columns(id)", "RESTRICT", "RESTRICT")
-//  }
-
 type Task struct {
 	gorm.Model
 

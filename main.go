@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/jinzhu/gorm"
 )
@@ -18,13 +19,15 @@ var (
 )
 
 type app struct {
+	logger   *log.Logger
 	bindHost string
 	bindPort int
 	db       *gorm.DB
 }
 
-func NewApp(bindHost string, bindPort int, dbName string) *app {
+func NewApp(logger *log.Logger, bindHost string, bindPort int, dbName string) *app {
 	app := &app{
+		logger:   logger,
 		bindHost: bindHost,
 		bindPort: bindPort,
 	}
@@ -38,7 +41,7 @@ func NewApp(bindHost string, bindPort int, dbName string) *app {
 func (a *app) InitDB(dbName string) {
 	db, err := gorm.Open("sqlite3", dbName)
 	if err != nil {
-		log.Println("can't open db", err)
+		a.logger.Println("can't open db", err)
 	}
 
 	// Then you could invoke `*sql.DB`'s functions with it
@@ -71,34 +74,36 @@ func (a *app) InitRouting() {
 		Get: a.ColumnListEndPointGet,
 	}
 
+	timeTrackDecorator := TimeTrackDecorator(a.logger)
+
 	serveStatic := http.FileServer(http.Dir("."))
 	http.Handle("/frontend/", serveStatic)
 
 	TaskRouting := RegexpHandler{}
 	TaskRouting.HandleFunc(`^/task/((?P<id>\d+)/)?$`, TaskEndPoint.Dispatch)
-	http.HandleFunc("/task/", TimeTrackDecorator(TaskRouting.ServeHTTP))
+	http.HandleFunc("/task/", timeTrackDecorator(TaskRouting.ServeHTTP))
 
 	ColumnRouting := RegexpHandler{}
 	ColumnRouting.HandleFunc(`^/column/((?P<id>\d+)/)?$`, ColumnEndPoint.Dispatch)
-	http.HandleFunc("/column/", TimeTrackDecorator(ColumnRouting.ServeHTTP))
+	http.HandleFunc("/column/", timeTrackDecorator(ColumnRouting.ServeHTTP))
 
 	http.HandleFunc("/",
-		TimeTrackDecorator(func(w http.ResponseWriter, r *http.Request) {
+		timeTrackDecorator(func(w http.ResponseWriter, r *http.Request) {
 			index, _ := ioutil.ReadFile("./frontend/templates/index.html")
 			io.WriteString(w, string(index))
 		}))
 }
 
 func (a *app) Run() {
-	bindAddress := fmt.Sprintf("%s:%d", bindHost, bindPort)
-	log.Printf("Server starting on: %s\n", bindAddress)
-	log.Fatal(http.ListenAndServe(bindAddress, nil))
+	bindAddress := fmt.Sprintf("%s:%d", a.bindHost, a.bindPort)
+	a.logger.Printf("Server starting on: %s\n", bindAddress)
+	a.logger.Fatal(http.ListenAndServe(bindAddress, nil))
 }
 
 func main() {
 	flag.Parse()
-	log.SetFlags(log.LstdFlags | log.Lshortfile)
+	logger := log.New(os.Stdout, "", log.LstdFlags|log.Lshortfile|log.Ldate)
 
-	application := NewApp(*bindHost, *bindPort, *dbName)
+	application := NewApp(logger, *bindHost, *bindPort, *dbName)
 	application.Run()
 }
