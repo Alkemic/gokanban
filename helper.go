@@ -37,19 +37,15 @@ const (
 )
 
 var (
-	renderer blackfriday.Renderer
-
 	emptyCheckboxRegexp    = regexp.MustCompile(`(?m:^(\s*)\*\s?\[ \](.*)$)`)
 	checkedCheckboxRegexp  = regexp.MustCompile(`(?mi:^(\s*)\*\s?\[x\](.*)$)`)
 	disabledCheckboxRegexp = regexp.MustCompile(`(?mi:^(\s*)\*\s?~~\[[ x]\](.*~~(.*)?)$)`)
 	paramsRegexp           = regexp.MustCompile("({params})")
 	checkboxLineRegexp     = regexp.MustCompile(`(?mi:^\s*\*\s?\[[ x]\](.*)$)`)
 	checkboxRegexp         = regexp.MustCompile(`(?i:\[[ x]\])`)
-)
 
-func init() {
 	renderer = blackfriday.HtmlRenderer(commonHTMLFlags, "", "")
-}
+)
 
 func timeTrack(logger *log.Logger, start time.Time, name string) {
 	logger.Printf("%s took %s", name, time.Since(start))
