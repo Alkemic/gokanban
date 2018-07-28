@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"io"
 	"io/ioutil"
 	"log"
@@ -12,17 +11,15 @@ import (
 
 type app struct {
 	logger   *log.Logger
-	bindHost string
-	bindPort int
+	bindAddr string
 	db       *gorm.DB
 }
 
 // NewApp returns new instance of app
-func NewApp(logger *log.Logger, bindHost string, bindPort int, dbName string) *app {
+func NewApp(logger *log.Logger, bindAddr, dbName string) *app {
 	app := &app{
 		logger:   logger,
-		bindHost: bindHost,
-		bindPort: bindPort,
+		bindAddr: bindAddr,
 	}
 
 	app.InitDB(dbName)
@@ -88,7 +85,6 @@ func (a *app) InitRouting() {
 }
 
 func (a *app) Run() {
-	bindAddress := fmt.Sprintf("%s:%d", a.bindHost, a.bindPort)
-	a.logger.Printf("Server starting on: %s\n", bindAddress)
-	a.logger.Fatal(http.ListenAndServe(bindAddress, nil))
+	a.logger.Printf("Server starting on: %s\n", a.bindAddr)
+	a.logger.Fatal(http.ListenAndServe(a.bindAddr, nil))
 }
