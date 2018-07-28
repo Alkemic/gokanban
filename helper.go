@@ -13,7 +13,7 @@ import (
 )
 
 const (
-	commonHtmlFlags = 0 |
+	commonHTMLFlags = 0 |
 		blackfriday.HTML_USE_XHTML |
 		blackfriday.HTML_USE_SMARTYPANTS |
 		blackfriday.HTML_SMARTYPANTS_FRACTIONS |
@@ -48,18 +48,18 @@ var (
 )
 
 func init() {
-	renderer = blackfriday.HtmlRenderer(commonHtmlFlags, "", "")
+	renderer = blackfriday.HtmlRenderer(commonHTMLFlags, "", "")
 }
 
-func TimeTrack(logger *log.Logger, start time.Time, name string) {
-	elapsed := time.Since(start)
-	logger.Printf("%s took %s", name, elapsed)
+func timeTrack(logger *log.Logger, start time.Time, name string) {
+	logger.Printf("%s took %s", name, time.Since(start))
 }
 
+// TimeTrackDecorator decorator prints time that took to execute handler
 func TimeTrackDecorator(logger *log.Logger) func(http.HandlerFunc) http.HandlerFunc {
 	return func(f http.HandlerFunc) http.HandlerFunc {
 		return func(w http.ResponseWriter, r *http.Request) {
-			defer TimeTrack(
+			defer timeTrack(
 				logger,
 				time.Now(),
 				fmt.Sprintf(
@@ -90,14 +90,15 @@ func prepareCheckboxes(t string, id uint) (rend string) {
 	})
 }
 
+// RenderMarkdown returns rendered markdown
 func RenderMarkdown(text string) (rendered string) {
 	return string(blackfriday.Markdown(
 		[]byte(text), renderer, commonExtensions,
 	))
 }
 
-func logTask(db *gorm.DB, id, cId int, a string) {
-	db.Save(&TaskLog{TaskID: id, OldColumnId: cId, Action: a})
+func logTask(db *gorm.DB, id, cID int, a string) {
+	db.Save(&TaskLog{TaskID: id, OldColumnID: cID, Action: a})
 }
 
 func toggleSingleCheckbox(t string) string {

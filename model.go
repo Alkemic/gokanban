@@ -48,5 +48,5 @@ type TaskLog struct {
 	TaskID int // `sql:"type:int(10) unsigned;not null"`
 
 	OldColumn   Column
-	OldColumnId int // `sql:"type:int(10) unsigned;not null"`
+	OldColumnID int // `sql:"type:int(10) unsigned;not null"`
 }

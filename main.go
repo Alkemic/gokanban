@@ -25,6 +25,7 @@ type app struct {
 	db       *gorm.DB
 }
 
+// NewApp returns new instance of app
 func NewApp(logger *log.Logger, bindHost string, bindPort int, dbName string) *app {
 	app := &app{
 		logger:   logger,
