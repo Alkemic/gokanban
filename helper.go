@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/jinzhu/gorm"
-	"github.com/russross/blackfriday"
+	"gopkg.in/russross/blackfriday.v1"
 )
 
 const (

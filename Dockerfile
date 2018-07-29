@@ -1,9 +1,12 @@
 FROM golang:1.10
-RUN go get -v github.com/Alkemic/gokanban
+COPY . /go/src/github.com/Alkemic/gokanban/
+RUN go get -u github.com/golang/dep/cmd/dep
+WORKDIR /go/src/github.com/Alkemic/gokanban/
+RUN dep ensure && go test -cover ./... && go install ./...
 RUN strip /go/bin/gokanban
 
 FROM node:8
-COPY --from=0 /go/src/github.com/Alkemic/gokanban/frontend /frontend
+COPY ./frontend /frontend
 RUN (cd /frontend && npm i)
 
 FROM debian:9
