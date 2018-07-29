@@ -1,0 +1,24 @@
+language: go
+
+notifications:
+  email:
+  - alkemic7+travis-ci-notifications@gmail.com
+
+services:
+  - docker
+
+before_install:
+- docker --version
+
+script:
+- docker build -t alkemic/gokanban .
+- |
+  if [ "$TRAVIS_BRANCH" == "master" ]; then
+    echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_LOGIN" --password-stdin
+    docker push alkemic/gokanban
+  fi
+
+env:
+  global:
+  - secure: Iy6wTskXuhX9Ovb1jrx+5jqAy7Jlkv6eaxWdgXd+ELry/NJA5hnN8Zbq3b8Q0gWLVoVBXydLvzR87lZL8SRWLuSVyVeI+/ULOZwWFdJslNRomWYMIs9N/FSwGFatbJ9/9zaoNCrmgXgzt8Q+SPshfKYcwhV1K7mjfCamQ0fFuQQyZE6Q1R/W/ezXdiqCiuDNDqVpBPMkD5hHsnmFspPchRafu6QGAXEFYGyX+6q/689AvRIOZ+IfOnyuEyIRqCAfoLSNIVKudMHzOvOtF/iGwSEZTcNIByEQ+++u+a3UX0XIHue8npl8bu/p51NF473RRJz8vfilJfV+4ge2Cot+SfaKbJTTc7Enpy3qQVr/l1+vNuJJdonwCa2s3asg35rgdlCL9BFsmMfCM6CK2vVlKcA4Me9qE2kKbLW2ywCigU8LExm3ttWajW2noLgtOFRJxgbzIWO0tfLIywLwZD3S4WUB3admZFpfuyB9DvKWDcyt2rZUQbYlGxzZOFd5/2/mqcbE0uUauOymKpzriIkiJT1qmg+usfV8TRjuQUNyqYGccPWWHzAQxHkJddzQEas81CwMiQwKfPvcwguqAE+FT4NgpupzHHA+ZCEbrDUhBEaVMnurcEfVkuRdiwzQWQBSay9+7sAsXUKiGYG1r0pM5FoZrTAH1STq6NZfaD0TJZI=
+  - secure: m1O2zEDpYaEl7wPeTicdRDwKKbsfIAqXVsvI3FphKVAR9rdeH2rRy3dSLiz4qcFab+5f1xJ+DZMsQgC5xpszVBy9V6K//mVnmZGqrUuUrD3zVYkrYVNCjCnYvZErW4u6KDKXrt61pTnoMqLsMIUMHPRQadAqXgzCK2g96CIx2Pkp5fKUxVxS8J9AUiFAioQNSL/5b81brFxM6qHWUVTBJfLit5LQR8wge67wRMzNaQ/sfZ3/621uPJQkl6Lr0B4cb2swOgsPqaZtX5wA8l+uSF062gd/yUjcEYzx7ATR90hAMloIFcPG6INI0fMS5Y4jk2O0TfVMz7V4oA+Z2RXBnUMaEkzqhuHscfRgDMAMjlTJaRO67HN3ijSrAhRYUDJeemPR/tb3mZbeKCP8cGhlJ87n03TfUNThf7cwMXP5lah4G8uOv6fwkLYtbTbSwCoTzHxe4Z8ITVWpt6YhwUJMlJsMkoX4ImRRNuOU/JCbwFWcV3rXFWjV/WNacrd8Y0AEmUSJbN0BVTbr3xkjsKm1ZgnU6Xnk0nEoH/KvJvyPR1kjG5paWE9gX54Y+wKcLWoI9eyXZ+9DWYRHtCIXiU9fEKvVlCkoFQa05r0mpdoDmCHlo5NwnxF75c7/BTQ/B31Q9h1CwCT+xFdnpxuub9AigeCLtAefd/IuoLFKKsfzYGw=
