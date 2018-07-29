@@ -7,8 +7,12 @@ import (
 	"strings"
 )
 
-var ColumnEndPoint,
-	TaskEndPoint RESTEndPoint
+const (
+	makeGapeSQL    = "update task set position = position + 1 where column_id = ? and position >= ?;"
+	moveTaskSQL    = "update task set position = ?, column_id = ? where id = ?;"
+	removeGapeSQL  = "update task set position = position - 1 where column_id = ? and position > ?;"
+	setPositionSQL = "update task set position = (select max(position) from task where column_id = ? and deleted_at is null) + 1 where id = ?;"
+)
 
 func (a *app) TaskEndPointGet(w http.ResponseWriter, r *http.Request, p map[string]string) {
 	var err error
@@ -64,10 +68,7 @@ func (a *app) TaskEndPointPost(w http.ResponseWriter, r *http.Request, p map[str
 		Color:       r.Form.Get("Color"),
 	}
 	a.db.Save(&task)
-	a.db.Exec(
-		"update task set position = (select max(position) "+
-			"from task where column_id = ?) + 1 where id = ?;",
-		column.ID, task.ID)
+	a.db.Exec(setPositionSQL, column.ID, task.ID)
 	logTask(a.db, int(task.ID), int(column.ID), "create")
 }
 
@@ -82,47 +83,19 @@ func (a *app) TaskEndPointPut(w http.ResponseWriter, r *http.Request, p map[stri
 	_, okO := r.Form["Position"]
 	_, okC := r.Form["ColumnID"]
 	if okB { // we are toggling checkbox
-		checkId, _ := strconv.Atoi(r.Form.Get("checkId"))
-		task.Description = toggleCheckbox(task.Description, checkId)
-	} else if okO && okC { //
+		checkID, _ := strconv.Atoi(r.Form.Get("checkId"))
+		task.Description = toggleCheckbox(task.Description, checkID)
+	} else if okO && okC {
 		newPosition, _ := strconv.Atoi(r.Form.Get("Position"))
 		newColumnID, _ := strconv.Atoi(r.Form.Get("ColumnID"))
-		if task.ColumnID != newColumnID {
-			// remoce gap in old column
-			a.db.Exec(
-				"update task set position = position - 1 "+
-					"where column_id = ? and position >= ?;",
-				task.ColumnID, task.Position)
-			// make space in new column
-			a.db.Exec(
-				"update task set position = position + 1 "+
-					"where column_id = ? and position >= ?;",
-				newColumnID, newPosition)
-			logTask(a.db, id, task.ColumnID, "move column")
-		} else {
-			if newPosition > task.Position {
-				// move task between old and new position up
-				a.db.Exec(
-					`update task set position = position - 1
-							where column_id = ? and position <= ? and
-							position >= ?;`,
-					task.ColumnID, newPosition, task.Position)
-			} else if newPosition < task.Position {
-				// move task between old and new position down
-				a.db.Exec(
-					`update task set position = position + 1
-							where column_id = ? and position <= ? and
-							position >= ?;`,
-					task.ColumnID, task.Position, newPosition)
-				logTask(a.db, id, task.ColumnID, "move position")
-			}
-			// nop when newPosition == task.Position
-		}
+
+		a.db.Exec(makeGapeSQL, newColumnID, newPosition)
+		a.db.Exec(moveTaskSQL, newPosition, newColumnID, task.ID)
+		a.db.Exec(removeGapeSQL, task.ColumnID, task.Position)
+		logTask(a.db, id, task.ColumnID, "move column")
+
 		task.Position = newPosition
 		task.ColumnID = newColumnID
-	} else if okC {
-		task.ColumnID, _ = strconv.Atoi(r.Form.Get("ColumnID"))
-		logTask(a.db, id, task.ColumnID, "update column")
 	} else {
 		if _, ok := r.Form["Title"]; ok {
 			task.Title = r.Form.Get("Title")
@@ -146,7 +119,12 @@ func (a *app) TaskEndPointPut(w http.ResponseWriter, r *http.Request, p map[stri
 
 func (a *app) TaskEndPointDelete(w http.ResponseWriter, r *http.Request, p map[string]string) {
 	id, _ := strconv.Atoi(p["id"])
-	a.db.Where("id = ?", id).Delete(&Task{})
+
+	task := Task{}
+	a.db.Where("id = ?", id).Find(&task)
+	a.db.Delete(task)
+
+	a.db.Exec(removeGapeSQL, task.ColumnID, task.Position)
 
 	err := json.NewEncoder(w).Encode(map[string]string{"status": "ok"})
 	if err != nil {
