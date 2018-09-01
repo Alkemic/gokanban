@@ -16,38 +16,16 @@ type app struct {
 }
 
 // NewApp returns new instance of app
-func NewApp(logger *log.Logger, bindAddr, dbName string) *app {
+func NewApp(logger *log.Logger, bindAddr string, db *gorm.DB) *app {
 	app := &app{
 		logger:   logger,
 		bindAddr: bindAddr,
+		db:       db,
 	}
 
-	app.InitDB(dbName)
 	app.InitRouting()
 
 	return app
-}
-
-func (a *app) InitDB(dbName string) {
-	db, err := gorm.Open("sqlite3", dbName)
-	if err != nil {
-		a.logger.Println("can't open db", err)
-	}
-
-	// Then you could invoke `*sql.DB`'s functions with it
-	db.DB().Ping()
-	db.DB().SetMaxIdleConns(10)
-	db.DB().SetMaxOpenConns(100)
-
-	// Disable table name's pluralization
-	db.SingularTable(true)
-
-	db.AutoMigrate(&Column{}, &Task{}, &Tag{}, &TaskLog{})
-
-	db.Model(&TaskLog{}).AddForeignKey("task_id", "tasks(id)", "RESTRICT", "RESTRICT")
-	db.Model(&TaskLog{}).AddForeignKey("old_column_id", "columns(id)", "RESTRICT", "RESTRICT")
-
-	a.db = db
 }
 
 func (a *app) InitRouting() {
