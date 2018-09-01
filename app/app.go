@@ -12,7 +12,6 @@ import (
 )
 
 type restHandler interface {
-	TaskEndPointGet(rw http.ResponseWriter, req *http.Request, p map[string]string)
 	TaskEndPointPost(rw http.ResponseWriter, req *http.Request, p map[string]string)
 	TaskEndPointPut(rw http.ResponseWriter, req *http.Request, p map[string]string)
 	TaskEndPointDelete(rw http.ResponseWriter, req *http.Request, p map[string]string)
@@ -37,10 +36,7 @@ func NewApp(logger *log.Logger, rest restHandler) *app {
 }
 
 func (a *app) initRouting() {
-	// todo: refactor this so it'll use regexp routing saved as a field in app
-	// and then use in http.ListenAndServe as a handler
 	TaskEndPoint := helper.RESTEndPoint{
-		Get:    a.rest.TaskEndPointGet,
 		Put:    a.rest.TaskEndPointPut,
 		Delete: a.rest.TaskEndPointDelete,
 		Post:   a.rest.TaskEndPointPost,

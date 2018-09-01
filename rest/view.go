@@ -25,37 +25,21 @@ const (
 )
 
 type restHandler struct {
-	logger *log.Logger
-	db     *gorm.DB
+	logger  *log.Logger
+	db      *gorm.DB
+	useCase useCase
 }
 
-func NewRestHandler(logger *log.Logger, db *gorm.DB) *restHandler {
+type useCase interface {
+	ListColumns() ([]map[string]interface{}, error)
+	GetColumn(id int) (map[string]interface{}, error)
+}
+
+func NewRestHandler(logger *log.Logger, db *gorm.DB, useCase useCase) *restHandler {
 	return &restHandler{
-		logger: logger,
-		db:     db,
-	}
-}
-
-func (r *restHandler) TaskEndPointGet(rw http.ResponseWriter, req *http.Request, p map[string]string) {
-	var err error
-
-	if p["id"] == "" {
-		tasks := []model.Task{}
-		r.db.Preload("Tags", "Column").Find(&tasks)
-
-		tasksMap := helper.LoadTasksAsMap(&tasks)
-
-		err = json.NewEncoder(rw).Encode(tasksMap)
-	} else {
-		id, _ := strconv.Atoi(p["id"])
-		task := model.Task{}
-
-		r.db.Where("id = ?", id).Preload("Tags", "Column").Find(&task)
-		err = json.NewEncoder(rw).Encode(helper.TaskToMap(task))
-	}
-
-	if err != nil {
-		r.logger.Println(err)
+		logger:  logger,
+		db:      db,
+		useCase: useCase,
 	}
 }
 
@@ -157,41 +141,29 @@ func (r *restHandler) TaskEndPointDelete(rw http.ResponseWriter, req *http.Reque
 
 func (r *restHandler) ColumnListEndPointGet(rw http.ResponseWriter, req *http.Request, p map[string]string) {
 	var err error
-	tasks := []model.Task{}
-
 	if p["id"] == "" {
-		columns := []model.Column{}
-		r.db.Order("position asc").Find(&columns)
-
-		columnsMap := helper.LoadColumnsAsMap(&columns)
-
-		for i, column := range columnsMap {
-			tasks = []model.Task{}
-			r.db.Order("position asc").Where("column_id = ?", column["ID"]).
-				Preload("Tags").Find(&tasks)
-
-			columnsMap[i]["Tasks"] = helper.LoadTasksAsMap(&tasks)
+		columns, err := r.useCase.ListColumns()
+		if err != nil {
+			helper.Handle500(rw)
+			r.logger.Println(err)
+			return
 		}
-
-		err = json.NewEncoder(rw).Encode(columnsMap)
+		err = json.NewEncoder(rw).Encode(columns)
 	} else {
-		column := model.Column{}
 		id, _ := strconv.Atoi(p["id"])
 
-		r.db.Where("id = ?", id).Find(&column)
-		columnMap := helper.ColumnToMap(&column)
-
-		r.db.Order("position asc").
-			Where("column_id = ?", column.ID).
-			Preload("Tags").Find(&tasks)
-
-		columnMap["Tasks"] = helper.LoadTasksAsMap(&tasks)
-
-		err = json.NewEncoder(rw).Encode(columnMap)
+		column, err := r.useCase.GetColumn(id)
+		if err != nil {
+			helper.Handle500(rw)
+			r.logger.Println(err)
+			return
+		}
+		err = json.NewEncoder(rw).Encode(column)
 	}
 
 	if err != nil {
 		r.logger.Println(err)
+		helper.Handle500(rw)
 	}
 }
 
@@ -199,14 +171,14 @@ func (r *restHandler) GetMux() *http.ServeMux {
 	// todo: refactor this so it'll use regexp routing saved as a field in app
 	// and then use in http.ListenAndServe as a handler
 	TaskEndPoint := helper.RESTEndPoint{
-		Get:    a.rest.TaskEndPointGet,
-		Put:    a.rest.TaskEndPointPut,
-		Delete: a.rest.TaskEndPointDelete,
-		Post:   a.rest.TaskEndPointPost,
+		//Get:    r.TaskEndPointGet,
+		Put:    r.TaskEndPointPut,
+		Delete: r.TaskEndPointDelete,
+		Post:   r.TaskEndPointPost,
 	}
 
 	ColumnEndPoint := helper.RESTEndPoint{
-		Get: a.rest.ColumnListEndPointGet,
+		Get: r.ColumnListEndPointGet,
 	}
 
 	timeTrackDecorator := middleware.TimeTrack(r.logger)

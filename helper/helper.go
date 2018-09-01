@@ -129,7 +129,7 @@ func PrepareTags(db *gorm.DB, s string) (tags []model.Tag) {
 	return tags
 }
 
-func TaskToMap(task model.Task) map[string]interface{} {
+func TaskToMap(task *model.Task) map[string]interface{} {
 	return map[string]interface{}{
 		"ID":          task.ID,
 		"Title":       task.Title,
@@ -161,19 +161,19 @@ func ColumnToMap(column *model.Column) map[string]interface{} {
 	}
 }
 
-func LoadTasksAsMap(tasks *[]model.Task) []map[string]interface{} {
+func LoadTasksAsMap(tasks []*model.Task) []map[string]interface{} {
 	tasksMap := make([]map[string]interface{}, 0)
-	for _, task := range *tasks {
+	for _, task := range tasks {
 		tasksMap = append(tasksMap, TaskToMap(task))
 	}
 
 	return tasksMap
 }
 
-func LoadColumnsAsMap(columns *[]model.Column) []map[string]interface{} {
+func LoadColumnsAsMap(columns []*model.Column) []map[string]interface{} {
 	columnsMap := make([]map[string]interface{}, 0)
-	for _, column := range *columns {
-		columnsMap = append(columnsMap, ColumnToMap(&column))
+	for _, column := range columns {
+		columnsMap = append(columnsMap, ColumnToMap(column))
 	}
 
 	return columnsMap

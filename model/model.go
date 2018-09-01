@@ -23,6 +23,10 @@ type Task struct {
 	Position int `sql:"DEFAULT:0"`
 }
 
+func (t *Task) MoveToColumn(id int) error {
+	return nil
+}
+
 type Tag struct {
 	ID   uint   `gorm:"primary_key"`
 	Name string `sql:"size:127"`

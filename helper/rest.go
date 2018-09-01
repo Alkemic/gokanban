@@ -43,3 +43,7 @@ func TimeTrack(logger *log.Logger) func(f http.HandlerFunc) http.HandlerFunc {
 		}
 	}
 }
+
+func Handle500(w http.ResponseWriter) {
+	w.WriteHeader(http.StatusInternalServerError)
+}
