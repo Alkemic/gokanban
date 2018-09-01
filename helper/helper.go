@@ -1,15 +1,14 @@
-package main
+package helper
 
 import (
 	"fmt"
-	"log"
-	"net/http"
 	"regexp"
 	"strings"
-	"time"
 
 	"github.com/jinzhu/gorm"
 	"gopkg.in/russross/blackfriday.v1"
+
+	"github.com/Alkemic/gokanban/model"
 )
 
 const (
@@ -47,28 +46,6 @@ var (
 	renderer = blackfriday.HtmlRenderer(commonHTMLFlags, "", "")
 )
 
-func timeTrack(logger *log.Logger, start time.Time, name string) {
-	logger.Printf("%s took %s", name, time.Since(start))
-}
-
-// TimeTrackDecorator decorator prints time that took to execute handler
-func TimeTrackDecorator(logger *log.Logger) func(http.HandlerFunc) http.HandlerFunc {
-	return func(f http.HandlerFunc) http.HandlerFunc {
-		return func(w http.ResponseWriter, r *http.Request) {
-			defer timeTrack(
-				logger,
-				time.Now(),
-				fmt.Sprintf(
-					"%4s %s",
-					r.Method,
-					r.RequestURI,
-				),
-			)
-			f(w, r)
-		}
-	}
-}
-
 func prepareCheckboxes(t string, id uint) (rend string) {
 	rend = disabledCheckboxRegexp.ReplaceAllString(
 		checkedCheckboxRegexp.ReplaceAllString(
@@ -93,8 +70,8 @@ func RenderMarkdown(text string) (rendered string) {
 	))
 }
 
-func logTask(db *gorm.DB, id, cID int, a string) {
-	db.Save(&TaskLog{TaskID: id, OldColumnID: cID, Action: a})
+func LogTask(db *gorm.DB, id, cID int, a string) {
+	db.Save(&model.TaskLog{TaskID: id, OldColumnID: cID, Action: a})
 }
 
 func toggleSingleCheckbox(t string) string {
@@ -111,7 +88,7 @@ func toggleSingleCheckbox(t string) string {
 	})
 }
 
-func toggleCheckbox(t string, n int) string {
+func ToggleCheckbox(t string, n int) string {
 	i := 0
 	return checkboxLineRegexp.ReplaceAllStringFunc(t, func(s string) string {
 		i++
@@ -138,21 +115,21 @@ func calculateTaskProgress(t string) map[string]int {
 	return nil
 }
 
-func prepareTags(db *gorm.DB, s string) (tags []Tag) {
+func PrepareTags(db *gorm.DB, s string) (tags []model.Tag) {
 	for _, value := range strings.Split(s, ",") {
 		if value == "" {
 			continue
 		}
 
-		tag := Tag{}
-		db.FirstOrCreate(&tag, Tag{Name: strings.TrimSpace(value)})
+		tag := model.Tag{}
+		db.FirstOrCreate(&tag, model.Tag{Name: strings.TrimSpace(value)})
 		tags = append(tags, tag)
 	}
 
 	return tags
 }
 
-func taskToMap(task Task) map[string]interface{} {
+func TaskToMap(task model.Task) map[string]interface{} {
 	return map[string]interface{}{
 		"ID":          task.ID,
 		"Title":       task.Title,
@@ -172,34 +149,31 @@ func taskToMap(task Task) map[string]interface{} {
 	}
 }
 
-func columnToMap(column *Column) map[string]interface{} {
+func ColumnToMap(column *model.Column) map[string]interface{} {
 	return map[string]interface{}{
-		"ID": (*column).ID,
-
-		"Name":  (*column).Name,
-		"Limit": (*column).Limit,
-
-		"Position": (*column).Position,
-
-		"CreatedAt": (*column).CreatedAt,
-		"DeletedAt": (*column).DeletedAt,
-		"UpdatedAt": (*column).UpdatedAt,
+		"ID":        column.ID,
+		"Name":      column.Name,
+		"Limit":     column.Limit,
+		"Position":  column.Position,
+		"CreatedAt": column.CreatedAt,
+		"DeletedAt": column.DeletedAt,
+		"UpdatedAt": column.UpdatedAt,
 	}
 }
 
-func loadTasksAsMap(tasks *[]Task) []map[string]interface{} {
+func LoadTasksAsMap(tasks *[]model.Task) []map[string]interface{} {
 	tasksMap := make([]map[string]interface{}, 0)
 	for _, task := range *tasks {
-		tasksMap = append(tasksMap, taskToMap(task))
+		tasksMap = append(tasksMap, TaskToMap(task))
 	}
 
 	return tasksMap
 }
 
-func loadColumnsAsMap(columns *[]Column) []map[string]interface{} {
+func LoadColumnsAsMap(columns *[]model.Column) []map[string]interface{} {
 	columnsMap := make([]map[string]interface{}, 0)
 	for _, column := range *columns {
-		columnsMap = append(columnsMap, columnToMap(&column))
+		columnsMap = append(columnsMap, ColumnToMap(&column))
 	}
 
 	return columnsMap

@@ -5,6 +5,10 @@ import (
 	"os"
 
 	"github.com/jinzhu/gorm"
+
+	"github.com/Alkemic/gokanban/app"
+	"github.com/Alkemic/gokanban/model"
+	"github.com/Alkemic/gokanban/rest"
 )
 
 var (
@@ -19,8 +23,10 @@ func main() {
 		logger.Fatalf("Can't instanitize db: %s", err)
 	}
 
-	application := NewApp(logger, bindAddr, db)
-	application.Run()
+	rest_ := rest.NewRestHandler(logger, db)
+
+	application := app.NewApp(logger, rest_)
+	application.Run(bindAddr)
 }
 
 func InitDB(dbName string) (*gorm.DB, error) {
@@ -39,10 +45,10 @@ func InitDB(dbName string) (*gorm.DB, error) {
 	// Disable table name's pluralization
 	db.SingularTable(true)
 
-	db.AutoMigrate(&Column{}, &Task{}, &Tag{}, &TaskLog{})
+	db.AutoMigrate(&model.Column{}, &model.Task{}, &model.Tag{}, &model.TaskLog{})
 
-	db.Model(&TaskLog{}).AddForeignKey("task_id", "tasks(id)", "RESTRICT", "RESTRICT")
-	db.Model(&TaskLog{}).AddForeignKey("old_column_id", "columns(id)", "RESTRICT", "RESTRICT")
+	db.Model(&model.TaskLog{}).AddForeignKey("task_id", "tasks(id)", "RESTRICT", "RESTRICT")
+	db.Model(&model.TaskLog{}).AddForeignKey("old_column_id", "columns(id)", "RESTRICT", "RESTRICT")
 
 	return db, nil
 }

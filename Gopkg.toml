@@ -44,3 +44,7 @@
 [[constraint]]
   name = "gopkg.in/russross/blackfriday.v1"
   version = "1.5.1"
+
+[[constraint]]
+  branch = "master"
+  name = "github.com/Alkemic/go-route"

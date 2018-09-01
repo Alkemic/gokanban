@@ -1,4 +1,4 @@
-package main
+package helper
 
 import (
 	"testing"
@@ -73,28 +73,28 @@ func TestRenderMarkdown(t *testing.T) {
 
 func TestToggleCheckbox(t *testing.T) {
 	assert.Equal(
-		t, toggleCheckbox("*[ ] Foo bar\n*[x] Field 2", 1),
+		t, ToggleCheckbox("*[ ] Foo bar\n*[x] Field 2", 1),
 		"*[X] Foo bar\n*[x] Field 2",
 	)
 	assert.Equal(
-		t, toggleCheckbox("*[ ] Foo bar\n*[X] Field 2", 2),
+		t, ToggleCheckbox("*[ ] Foo bar\n*[X] Field 2", 2),
 		"*[ ] Foo bar\n*[ ] Field 2",
 	)
 
 	assert.Equal(
-		t, toggleCheckbox("*[S] Foo bar\n*[x] Field 2", 1),
+		t, ToggleCheckbox("*[S] Foo bar\n*[x] Field 2", 1),
 		"*[S] Foo bar\n*[ ] Field 2",
 		"It should ignore improperlly setted up marked checkbox",
 	)
 
 	assert.Equal(
-		t, toggleCheckbox("*[ ] Foo bar\n*[x] Field 2", 3),
+		t, ToggleCheckbox("*[ ] Foo bar\n*[x] Field 2", 3),
 		"*[ ] Foo bar\n*[x] Field 2",
 		"It should quietly ignore out of range request",
 	)
 
 	assert.Equal(
-		t, toggleCheckbox("*[ ] Foo bar\n*[x] Field 2", 3),
+		t, ToggleCheckbox("*[ ] Foo bar\n*[x] Field 2", 3),
 		"*[ ] Foo bar\n*[x] Field 2",
 		"It should quietly ignore out of range request",
 	)
