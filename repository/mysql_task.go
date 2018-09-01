@@ -1,9 +1,18 @@
 package repository
 
 import (
+	"strings"
+
 	"github.com/jinzhu/gorm"
 
 	"github.com/Alkemic/gokanban/model"
+)
+
+const (
+	makeGapeSQL    = "update task set position = position + 1 where column_id = ? and position >= ?;"
+	moveTaskSQL    = "update task set position = ?, column_id = ? where id = ?;"
+	removeGapeSQL  = "update task set position = position - 1 where column_id = ? and position > ?;"
+	setPositionSQL = "update task set position = (select max(position) from task where column_id = ? and deleted_at is null) + 1 where id = ?;"
 )
 
 type mysqlTaskRepository struct {
@@ -24,18 +33,29 @@ func (r *mysqlTaskRepository) List(args ...interface{}) ([]*model.Task, error) {
 	}
 	q.Preload("Tags").Find(&tasks)
 
-	if err := q.Error; err != nil {
-		return nil, err
-	}
-
-	return tasks, nil
+	return tasks, q.Error
 }
 
 func (r *mysqlTaskRepository) Get(id int) (*model.Task, error) {
 	task := &model.Task{}
-	r.db.Where("id = ?", id).Preload("Tags", "Column").Find(task)
-	if err := r.db.Error; err != nil {
-		return nil, err
-	}
-	return task, nil
+	q := r.db.Where("id = ?", id).Preload("Tags", "Column").Find(task)
+	return task, q.Error
+}
+
+func (r *mysqlTaskRepository) GetOrCreateTag(name string) (*model.Tag, error) {
+	var tag model.Tag
+	q := r.db.FirstOrCreate(&tag, model.Tag{Name: strings.TrimSpace(name)})
+	return &tag, q.Error
+}
+
+func (r *mysqlTaskRepository) Save(task *model.Task) error {
+	return r.db.Save(task).Error
+}
+
+func (r *mysqlTaskRepository) SetPosition(columnID, taskID uint) error {
+	return r.db.Exec(setPositionSQL, columnID, taskID).Error
+}
+
+func (r *mysqlTaskRepository) LogTask(columnID, taskID uint, action string) error {
+	return r.db.Save(&model.TaskLog{TaskID: int(taskID), OldColumnID: int(columnID), Action: action}).Error
 }

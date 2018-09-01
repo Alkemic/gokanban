@@ -7,11 +7,12 @@ import (
 	"log"
 	"net/http"
 	"strconv"
-	"strings"
 
 	"github.com/Alkemic/go-route"
 	"github.com/jinzhu/gorm"
 	"gitlab.com/Alkemic/gowks/core/middleware"
+
+	"net/url"
 
 	"github.com/Alkemic/gokanban/helper"
 	"github.com/Alkemic/gokanban/model"
@@ -33,6 +34,7 @@ type restHandler struct {
 type useCase interface {
 	ListColumns() ([]map[string]interface{}, error)
 	GetColumn(id int) (map[string]interface{}, error)
+	CreateTask(data map[string]string) error
 }
 
 func NewRestHandler(logger *log.Logger, db *gorm.DB, useCase useCase) *restHandler {
@@ -45,37 +47,21 @@ func NewRestHandler(logger *log.Logger, db *gorm.DB, useCase useCase) *restHandl
 
 func (r *restHandler) TaskEndPointPost(rw http.ResponseWriter, req *http.Request, p map[string]string) {
 	req.ParseForm()
+	data := r.toMap(req.Form)
+	if err := r.useCase.CreateTask(data); err != nil {
+		r.logger.Println(err)
+		helper.Handle500(rw)
+	}
+}
 
-	tags := []model.Tag{}
-	for _, value := range strings.Split(req.Form.Get("TagsString"), ",") {
-		if value == "" {
-			continue
+func (r *restHandler) toMap(formData url.Values) map[string]string {
+	data := map[string]string{}
+	for key, values := range formData {
+		if len(values) > 0 {
+			data[key] = values[0]
 		}
-
-		tag := model.Tag{}
-		r.db.FirstOrCreate(&tag, model.Tag{Name: strings.TrimSpace(value)})
-		tags = append(tags, tag)
 	}
-
-	column := model.Column{}
-	if _, ok := req.Form["ColumnID"]; ok {
-		ColumnID, _ := strconv.Atoi(req.Form.Get("ColumnID"))
-		r.db.Where("id = ?", ColumnID).Find(&column)
-	} else {
-		r.db.FirstOrCreate(&column, model.Column{Position: 1})
-	}
-
-	task := model.Task{
-		Title:       req.Form.Get("Title"),
-		Description: req.Form.Get("Description"),
-		Tags:        helper.PrepareTags(r.db, req.Form.Get("TagsString")),
-		Column:      &column,
-		ColumnID:    int(column.ID),
-		Color:       req.Form.Get("Color"),
-	}
-	r.db.Save(&task)
-	r.db.Exec(setPositionSQL, column.ID, task.ID)
-	helper.LogTask(r.db, int(task.ID), int(column.ID), "create")
+	return data
 }
 
 func (r *restHandler) TaskEndPointPut(rw http.ResponseWriter, req *http.Request, p map[string]string) {
