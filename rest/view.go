@@ -8,11 +8,10 @@ import (
 	"net/http"
 	"strconv"
 
+	"net/url"
+
 	"github.com/Alkemic/go-route"
 	"github.com/jinzhu/gorm"
-	"gitlab.com/Alkemic/gowks/core/middleware"
-
-	"net/url"
 
 	"github.com/Alkemic/gokanban/helper"
 	"github.com/Alkemic/gokanban/model"
@@ -35,6 +34,9 @@ type useCase interface {
 	ListColumns() ([]map[string]interface{}, error)
 	GetColumn(id int) (map[string]interface{}, error)
 	CreateTask(data map[string]string) error
+	ToggleCheckbox(id, checkboxID int) error
+	MoveTaskTo(id, newPosition, newColumnID int) error
+	UpdateTask(id int, data map[string]string) error
 }
 
 func NewRestHandler(logger *log.Logger, db *gorm.DB, useCase useCase) *restHandler {
@@ -56,10 +58,8 @@ func (r *restHandler) TaskEndPointPost(rw http.ResponseWriter, req *http.Request
 
 func (r *restHandler) toMap(formData url.Values) map[string]string {
 	data := map[string]string{}
-	for key, values := range formData {
-		if len(values) > 0 {
-			data[key] = values[0]
-		}
+	for key, _ := range formData {
+		data[key] = string(formData.Get(key))
 	}
 	return data
 }
@@ -70,43 +70,26 @@ func (r *restHandler) TaskEndPointPut(rw http.ResponseWriter, req *http.Request,
 	req.ParseForm()
 
 	r.db.Where("id = ?", id).Find(&task)
-
+	var err error
 	_, okB := req.Form["checkId"]
 	_, okO := req.Form["Position"]
 	_, okC := req.Form["ColumnID"]
 	if okB { // we are toggling checkbox
 		checkID, _ := strconv.Atoi(req.Form.Get("checkId"))
-		task.Description = helper.ToggleCheckbox(task.Description, checkID)
+		err = r.useCase.ToggleCheckbox(id, checkID)
 	} else if okO && okC {
 		newPosition, _ := strconv.Atoi(req.Form.Get("Position"))
 		newColumnID, _ := strconv.Atoi(req.Form.Get("ColumnID"))
-
-		r.db.Exec(makeGapeSQL, newColumnID, newPosition)
-		r.db.Exec(moveTaskSQL, newPosition, newColumnID, task.ID)
-		r.db.Exec(removeGapeSQL, task.ColumnID, task.Position)
-		helper.LogTask(r.db, id, task.ColumnID, "move column")
-
-		task.Position = newPosition
-		task.ColumnID = newColumnID
+		err = r.useCase.MoveTaskTo(id, newPosition, newColumnID)
 	} else {
-		if _, ok := req.Form["Title"]; ok {
-			task.Title = req.Form.Get("Title")
-		}
-		if _, ok := req.Form["Description"]; ok {
-			task.Description = req.Form.Get("Description")
-		}
-		if _, ok := req.Form["TagsString"]; ok {
-			r.db.Exec("DELETE FROM task_tags WHERE task_id = ?", task.ID)
-			task.Tags = helper.PrepareTags(r.db, req.Form.Get("TagsString"))
-		}
-		if _, ok := req.Form["Color"]; ok {
-			task.Color = req.Form.Get("Color")
-		} else {
-			task.Color = ""
-		}
-		helper.LogTask(r.db, id, task.ColumnID, "update task")
+		err = r.useCase.UpdateTask(id, r.toMap(req.Form))
 	}
 	r.db.Save(&task)
+
+	if err != nil {
+		r.logger.Println(err)
+		helper.Handle500(rw)
+	}
 }
 
 func (r *restHandler) TaskEndPointDelete(rw http.ResponseWriter, req *http.Request, p map[string]string) {
@@ -167,7 +150,7 @@ func (r *restHandler) GetMux() *http.ServeMux {
 		Get: r.ColumnListEndPointGet,
 	}
 
-	timeTrackDecorator := middleware.TimeTrack(r.logger)
+	timeTrackDecorator := helper.TimeTrack(r.logger)
 
 	mux := http.NewServeMux()
 

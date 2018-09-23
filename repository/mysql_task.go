@@ -9,10 +9,10 @@ import (
 )
 
 const (
-	makeGapeSQL    = "update task set position = position + 1 where column_id = ? and position >= ?;"
-	moveTaskSQL    = "update task set position = ?, column_id = ? where id = ?;"
-	removeGapeSQL  = "update task set position = position - 1 where column_id = ? and position > ?;"
-	setPositionSQL = "update task set position = (select max(position) from task where column_id = ? and deleted_at is null) + 1 where id = ?;"
+	makeGapeSQL    = "update task set position = position + 1 where column_id = ? and position >= ?"
+	moveTaskSQL    = "update task set position = ?, column_id = ? where id = ?"
+	removeGapeSQL  = "update task set position = position - 1 where column_id = ? and position > ?"
+	setPositionSQL = "update task set position = (select max(position) from task where column_id = ? and deleted_at is null) + 1 where id = ?"
 )
 
 type mysqlTaskRepository struct {
@@ -38,7 +38,7 @@ func (r *mysqlTaskRepository) List(args ...interface{}) ([]*model.Task, error) {
 
 func (r *mysqlTaskRepository) Get(id int) (*model.Task, error) {
 	task := &model.Task{}
-	q := r.db.Where("id = ?", id).Preload("Tags", "Column").Find(task)
+	q := r.db.Where("id = ?", id).Preload("Tags").Find(task)
 	return task, q.Error
 }
 
@@ -58,4 +58,15 @@ func (r *mysqlTaskRepository) SetPosition(columnID, taskID uint) error {
 
 func (r *mysqlTaskRepository) LogTask(columnID, taskID uint, action string) error {
 	return r.db.Save(&model.TaskLog{TaskID: int(taskID), OldColumnID: int(columnID), Action: action}).Error
+}
+
+func (r *mysqlTaskRepository) UpdateTaskPosition(task *model.Task, newPosition, newColumnID int) error {
+
+	if q := r.db.Exec(makeGapeSQL, newColumnID, newPosition); q.Error != nil {
+		return q.Error
+	}
+	if q := r.db.Exec(moveTaskSQL, newPosition, newColumnID, task.ID); q.Error != nil {
+		return q.Error
+	}
+	return r.db.Exec(removeGapeSQL, task.ColumnID, task.Position).Error
 }

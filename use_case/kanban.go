@@ -9,11 +9,13 @@ import (
 )
 
 type taskRepository interface {
+	Get(id int) (*model.Task, error)
 	List(args ...interface{}) ([]*model.Task, error)
 	GetOrCreateTag(name string) (*model.Tag, error)
 	Save(task *model.Task) error
 	SetPosition(columnID, taskID uint) error
 	LogTask(columnID, taskID uint, action string) error
+	UpdateTaskPosition(task *model.Task, newPosition, newColumnID int) error
 }
 
 type columnRepository interface {
@@ -109,4 +111,63 @@ func (uc *useCase) CreateTask(data map[string]string) error {
 	}
 
 	return nil
+}
+
+func (uc *useCase) ToggleCheckbox(id, checkboxID int) error {
+	task, err := uc.taskRepository.Get(id)
+	if err != nil {
+		return err
+	}
+	task.Description = helper.ToggleCheckbox(task.Description, checkboxID)
+	return uc.taskRepository.Save(task)
+}
+
+func (uc *useCase) MoveTaskTo(id, newPosition, newColumnID int) error {
+	task, err := uc.taskRepository.Get(id)
+	if err != nil {
+		return err
+	}
+
+	err = uc.taskRepository.UpdateTaskPosition(task, newPosition, newColumnID)
+	if err != nil {
+		return err
+	}
+	uc.taskRepository.LogTask(uint(id), uint(task.ColumnID), "move column")
+	task.Position = newPosition
+	task.ColumnID = newColumnID
+	return uc.taskRepository.Save(task)
+}
+
+func (uc *useCase) UpdateTask(id int, data map[string]string) error {
+	task, err := uc.taskRepository.Get(id)
+	if err != nil {
+		return err
+	}
+
+	if title, ok := data["Title"]; ok {
+		task.Title = title
+	}
+	if description, ok := data["Description"]; ok {
+		task.Description = description
+	}
+	var tags []model.Tag
+	if tagsString, ok := data["TagsString"]; ok {
+		for _, value := range strings.Split(tagsString, ",") {
+			if value = strings.TrimSpace(value); value == "" {
+				continue
+			}
+
+			tag, err := uc.taskRepository.GetOrCreateTag(value)
+			if err != nil {
+				return err
+			}
+			tags = append(tags, *tag)
+		}
+	}
+	task.Tags = tags
+	if color, ok := data["Color"]; ok {
+		task.Color = color
+	}
+	uc.taskRepository.LogTask(uint(id), uint(task.ColumnID), "update task")
+	return uc.taskRepository.Save(task)
 }
