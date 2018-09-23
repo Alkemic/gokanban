@@ -26,6 +26,7 @@ func main() {
 	}
 	taskRepository := repository.NewMysqlTaskRepository(db)
 	columnRepository := repository.NewMySQLColumnRepository(db)
+	columnRepository.Init()
 	useCase := use_case.NewUseCase(taskRepository, columnRepository)
 	rest_ := rest.NewRestHandler(logger, db, useCase)
 	application := app.NewApp(logger, rest_)

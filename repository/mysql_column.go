@@ -33,3 +33,10 @@ func (r *mySQLColumnRepository) Get(id int) (*model.Column, error) {
 	}
 	return column, nil
 }
+
+func (r *mySQLColumnRepository) Init() {
+	r.db.FirstOrCreate(&model.Column{}, &model.Column{Name: "Backlog", Limit: 10, Position: 1})
+	r.db.FirstOrCreate(&model.Column{}, &model.Column{Name: "To Do", Limit: 10, Position: 2})
+	r.db.FirstOrCreate(&model.Column{}, &model.Column{Name: "WiP", Limit: 10, Position: 3})
+	r.db.FirstOrCreate(&model.Column{}, &model.Column{Name: "Done", Limit: 10, Position: 4})
+}
