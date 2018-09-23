@@ -1,4 +1,4 @@
-package use_case
+package kanban
 
 import (
 	"strconv"
@@ -24,20 +24,20 @@ type columnRepository interface {
 	Get(id int) (*model.Column, error)
 }
 
-type useCase struct {
+type kanban struct {
 	taskRepository   taskRepository
 	columnRepository columnRepository
 }
 
-func NewUseCase(taskRepository taskRepository, columnRepository columnRepository) *useCase {
-	return &useCase{
+func NewKanban(taskRepository taskRepository, columnRepository columnRepository) *kanban {
+	return &kanban{
 		taskRepository:   taskRepository,
 		columnRepository: columnRepository,
 	}
 }
 
-func (uc *useCase) ListColumns() ([]map[string]interface{}, error) {
-	columns, err := uc.columnRepository.List()
+func (k *kanban) ListColumns() ([]map[string]interface{}, error) {
+	columns, err := k.columnRepository.List()
 	if err != nil {
 		return nil, err
 	}
@@ -45,7 +45,7 @@ func (uc *useCase) ListColumns() ([]map[string]interface{}, error) {
 	columnsMap := helper.LoadColumnsAsMap(columns)
 
 	for i, column := range columnsMap {
-		tasks, err := uc.taskRepository.List("column_id = ?", column["ID"])
+		tasks, err := k.taskRepository.List("column_id = ?", column["ID"])
 		if err != nil {
 			return nil, err
 		}
@@ -56,14 +56,14 @@ func (uc *useCase) ListColumns() ([]map[string]interface{}, error) {
 	return columnsMap, nil
 }
 
-func (uc *useCase) GetColumn(id int) (map[string]interface{}, error) {
-	column, err := uc.columnRepository.Get(id)
+func (k *kanban) GetColumn(id int) (map[string]interface{}, error) {
+	column, err := k.columnRepository.Get(id)
 	if err != nil {
 		return nil, err
 	}
 
 	columnMap := helper.ColumnToMap(column)
-	tasks, err := uc.taskRepository.List("column_id = ?", column.ID)
+	tasks, err := k.taskRepository.List("column_id = ?", column.ID)
 	if err != nil {
 		return nil, err
 	}
@@ -73,14 +73,14 @@ func (uc *useCase) GetColumn(id int) (map[string]interface{}, error) {
 	return columnMap, nil
 }
 
-func (uc *useCase) CreateTask(data map[string]string) error {
+func (k *kanban) CreateTask(data map[string]string) error {
 	tags := []model.Tag{}
 	for _, value := range strings.Split(data["TagsString"], ",") {
 		if value = strings.TrimSpace(value); value == "" {
 			continue
 		}
 
-		tag, err := uc.taskRepository.GetOrCreateTag(value)
+		tag, err := k.taskRepository.GetOrCreateTag(value)
 		if err != nil {
 			return err
 		}
@@ -88,7 +88,7 @@ func (uc *useCase) CreateTask(data map[string]string) error {
 	}
 
 	columnID, _ := strconv.Atoi(data["ColumnID"])
-	column, err := uc.columnRepository.Get(columnID)
+	column, err := k.columnRepository.Get(columnID)
 	if err != nil {
 		return err
 	}
@@ -101,46 +101,46 @@ func (uc *useCase) CreateTask(data map[string]string) error {
 		ColumnID:    int(column.ID),
 		Color:       data["Color"],
 	}
-	if err := uc.taskRepository.Save(&task); err != nil {
+	if err := k.taskRepository.Save(&task); err != nil {
 		return err
 	}
-	if err := uc.taskRepository.SetPosition(column.ID, task.ID); err != nil {
+	if err := k.taskRepository.SetPosition(column.ID, task.ID); err != nil {
 		return err
 	}
-	if err := uc.taskRepository.LogTask(column.ID, task.ID, "create"); err != nil {
+	if err := k.taskRepository.LogTask(column.ID, task.ID, "create"); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (uc *useCase) ToggleCheckbox(id, checkboxID int) error {
-	task, err := uc.taskRepository.Get(id)
+func (k *kanban) ToggleCheckbox(id, checkboxID int) error {
+	task, err := k.taskRepository.Get(id)
 	if err != nil {
 		return err
 	}
 	task.Description = helper.ToggleCheckbox(task.Description, checkboxID)
-	return uc.taskRepository.Save(task)
+	return k.taskRepository.Save(task)
 }
 
-func (uc *useCase) MoveTaskTo(id, newPosition, newColumnID int) error {
-	task, err := uc.taskRepository.Get(id)
+func (k *kanban) MoveTaskTo(id, newPosition, newColumnID int) error {
+	task, err := k.taskRepository.Get(id)
 	if err != nil {
 		return err
 	}
 
-	err = uc.taskRepository.UpdateTaskPosition(task, newPosition, newColumnID)
+	err = k.taskRepository.UpdateTaskPosition(task, newPosition, newColumnID)
 	if err != nil {
 		return err
 	}
-	uc.taskRepository.LogTask(uint(id), uint(task.ColumnID), "move column")
+	k.taskRepository.LogTask(uint(id), uint(task.ColumnID), "move column")
 	task.Position = newPosition
 	task.ColumnID = newColumnID
-	return uc.taskRepository.Save(task)
+	return k.taskRepository.Save(task)
 }
 
-func (uc *useCase) UpdateTask(id int, data map[string]string) error {
-	task, err := uc.taskRepository.Get(id)
+func (k *kanban) UpdateTask(id int, data map[string]string) error {
+	task, err := k.taskRepository.Get(id)
 	if err != nil {
 		return err
 	}
@@ -158,7 +158,7 @@ func (uc *useCase) UpdateTask(id int, data map[string]string) error {
 				continue
 			}
 
-			tag, err := uc.taskRepository.GetOrCreateTag(value)
+			tag, err := k.taskRepository.GetOrCreateTag(value)
 			if err != nil {
 				return err
 			}
@@ -169,19 +169,19 @@ func (uc *useCase) UpdateTask(id int, data map[string]string) error {
 	if color, ok := data["Color"]; ok {
 		task.Color = color
 	}
-	uc.taskRepository.LogTask(uint(id), uint(task.ColumnID), "update task")
-	return uc.taskRepository.Save(task)
+	k.taskRepository.LogTask(uint(id), uint(task.ColumnID), "update task")
+	return k.taskRepository.Save(task)
 }
 
-func (uc *useCase) DeleteTask(id int) error {
-	task, err := uc.taskRepository.Get(id)
+func (k *kanban) DeleteTask(id int) error {
+	task, err := k.taskRepository.Get(id)
 	if err != nil {
 		return err
 	}
-	if err := uc.taskRepository.DeleteTask(task); err != nil {
+	if err := k.taskRepository.DeleteTask(task); err != nil {
 		return err
 	}
-	if err := uc.taskRepository.LogTask(uint(id), uint(task.ColumnID), "delete task"); err != nil {
+	if err := k.taskRepository.LogTask(uint(id), uint(task.ColumnID), "delete task"); err != nil {
 		return nil
 	}
 	return nil

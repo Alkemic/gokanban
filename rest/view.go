@@ -59,11 +59,10 @@ func (r *restHandler) toMap(formData url.Values) map[string]string {
 func (r *restHandler) TaskEndPointPut(rw http.ResponseWriter, req *http.Request, p map[string]string) {
 	id, _ := strconv.Atoi(p["id"])
 	req.ParseForm()
-
-	var err error
 	_, okB := req.Form["checkId"]
 	_, okO := req.Form["Position"]
 	_, okC := req.Form["ColumnID"]
+	var err error
 	if okB { // we are toggling checkbox
 		checkID, _ := strconv.Atoi(req.Form.Get("checkId"))
 		err = r.useCase.ToggleCheckbox(id, checkID)

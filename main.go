@@ -7,10 +7,10 @@ import (
 	"github.com/jinzhu/gorm"
 
 	"github.com/Alkemic/gokanban/app"
+	"github.com/Alkemic/gokanban/kanban"
 	"github.com/Alkemic/gokanban/model"
 	"github.com/Alkemic/gokanban/repository"
 	"github.com/Alkemic/gokanban/rest"
-	"github.com/Alkemic/gokanban/use_case"
 )
 
 var (
@@ -23,12 +23,12 @@ func main() {
 	logger := log.New(os.Stdout, "", log.LstdFlags|log.Lshortfile|log.Ldate)
 	db, err := InitDB(dbName, debug == "true")
 	if err != nil {
-		logger.Fatalf("Can't instanitize db: %s", err)
+		logger.Fatalf("Can't instantiate db: %s", err)
 	}
 	taskRepository := repository.NewMysqlTaskRepository(db)
 	columnRepository := repository.NewMySQLColumnRepository(db)
 	columnRepository.Init()
-	useCase := use_case.NewUseCase(taskRepository, columnRepository)
+	useCase := kanban.NewKanban(taskRepository, columnRepository)
 	rest_ := rest.NewRestHandler(logger, db, useCase)
 	application := app.NewApp(logger, rest_)
 	application.Run(bindAddr)
