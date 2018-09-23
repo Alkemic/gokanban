@@ -61,7 +61,6 @@ func (r *mysqlTaskRepository) LogTask(columnID, taskID uint, action string) erro
 }
 
 func (r *mysqlTaskRepository) UpdateTaskPosition(task *model.Task, newPosition, newColumnID int) error {
-
 	if q := r.db.Exec(makeGapeSQL, newColumnID, newPosition); q.Error != nil {
 		return q.Error
 	}
