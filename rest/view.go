@@ -13,7 +13,6 @@ import (
 	"github.com/jinzhu/gorm"
 
 	"github.com/Alkemic/gokanban/helper"
-	"github.com/Alkemic/gokanban/model"
 )
 
 type restHandler struct {
@@ -59,10 +58,8 @@ func (r *restHandler) toMap(formData url.Values) map[string]string {
 
 func (r *restHandler) TaskEndPointPut(rw http.ResponseWriter, req *http.Request, p map[string]string) {
 	id, _ := strconv.Atoi(p["id"])
-	task := model.Task{}
 	req.ParseForm()
 
-	r.db.Where("id = ?", id).Find(&task)
 	var err error
 	_, okB := req.Form["checkId"]
 	_, okO := req.Form["Position"]
@@ -77,7 +74,6 @@ func (r *restHandler) TaskEndPointPut(rw http.ResponseWriter, req *http.Request,
 	} else {
 		err = r.useCase.UpdateTask(id, r.toMap(req.Form))
 	}
-	r.db.Save(&task)
 
 	if err != nil {
 		r.logger.Println(err)

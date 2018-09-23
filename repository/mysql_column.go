@@ -26,12 +26,11 @@ func (r *mySQLColumnRepository) List() ([]*model.Column, error) {
 }
 
 func (r *mySQLColumnRepository) Get(id int) (*model.Column, error) {
-	column := &model.Column{}
-	q := r.db.Find(column)
-	if q.Error != nil {
-		return nil, q.Error
+	var column model.Column
+	if err := r.db.Where("id = ?", id).Find(&column).Error; err != nil {
+		return nil, err
 	}
-	return column, nil
+	return &column, nil
 }
 
 func (r *mySQLColumnRepository) Init() {
