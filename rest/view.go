@@ -6,22 +6,14 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
-	"strconv"
-
 	"net/url"
+	"strconv"
 
 	"github.com/Alkemic/go-route"
 	"github.com/jinzhu/gorm"
 
 	"github.com/Alkemic/gokanban/helper"
 	"github.com/Alkemic/gokanban/model"
-)
-
-const (
-	makeGapeSQL    = "update task set position = position + 1 where column_id = ? and position >= ?;"
-	moveTaskSQL    = "update task set position = ?, column_id = ? where id = ?;"
-	removeGapeSQL  = "update task set position = position - 1 where column_id = ? and position > ?;"
-	setPositionSQL = "update task set position = (select max(position) from task where column_id = ? and deleted_at is null) + 1 where id = ?;"
 )
 
 type restHandler struct {
@@ -37,6 +29,7 @@ type useCase interface {
 	ToggleCheckbox(id, checkboxID int) error
 	MoveTaskTo(id, newPosition, newColumnID int) error
 	UpdateTask(id int, data map[string]string) error
+	DeleteTask(id int) error
 }
 
 func NewRestHandler(logger *log.Logger, db *gorm.DB, useCase useCase) *restHandler {
@@ -94,18 +87,15 @@ func (r *restHandler) TaskEndPointPut(rw http.ResponseWriter, req *http.Request,
 
 func (r *restHandler) TaskEndPointDelete(rw http.ResponseWriter, req *http.Request, p map[string]string) {
 	id, _ := strconv.Atoi(p["id"])
+	if err := r.useCase.DeleteTask(id); err != nil {
+		r.logger.Println(err)
+		helper.Handle500(rw)
+		return
+	}
 
-	task := model.Task{}
-	r.db.Where("id = ?", id).Find(&task)
-	r.db.Delete(task)
-
-	r.db.Exec(removeGapeSQL, task.ColumnID, task.Position)
-
-	err := json.NewEncoder(rw).Encode(map[string]string{"status": "ok"})
-	if err != nil {
+	if err := json.NewEncoder(rw).Encode(map[string]string{"status": "ok"}); err != nil {
 		r.logger.Println(err)
 	}
-	helper.LogTask(r.db, id, 0, "delete")
 }
 
 func (r *restHandler) ColumnListEndPointGet(rw http.ResponseWriter, req *http.Request, p map[string]string) {
@@ -173,6 +163,3 @@ func (r *restHandler) GetMux() *http.ServeMux {
 
 	return mux
 }
-
-//func (r *restHandler) GetMux() *http.ServeMux {
-//}

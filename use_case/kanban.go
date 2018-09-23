@@ -16,6 +16,7 @@ type taskRepository interface {
 	SetPosition(columnID, taskID uint) error
 	LogTask(columnID, taskID uint, action string) error
 	UpdateTaskPosition(task *model.Task, newPosition, newColumnID int) error
+	DeleteTask(task *model.Task) error
 }
 
 type columnRepository interface {
@@ -170,4 +171,18 @@ func (uc *useCase) UpdateTask(id int, data map[string]string) error {
 	}
 	uc.taskRepository.LogTask(uint(id), uint(task.ColumnID), "update task")
 	return uc.taskRepository.Save(task)
+}
+
+func (uc *useCase) DeleteTask(id int) error {
+	task, err := uc.taskRepository.Get(id)
+	if err != nil {
+		return err
+	}
+	if err := uc.taskRepository.DeleteTask(task); err != nil {
+		return err
+	}
+	if err := uc.taskRepository.LogTask(uint(id), uint(task.ColumnID), "delete task"); err != nil {
+		return nil
+	}
+	return nil
 }

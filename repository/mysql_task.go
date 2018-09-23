@@ -70,3 +70,15 @@ func (r *mysqlTaskRepository) UpdateTaskPosition(task *model.Task, newPosition, 
 	}
 	return r.db.Exec(removeGapeSQL, task.ColumnID, task.Position).Error
 }
+
+func (r *mysqlTaskRepository) DeleteTask(task *model.Task) error {
+	r.db.Delete(task)
+	if err := r.db.Error; err != nil {
+		return err
+	}
+	r.db.Exec(removeGapeSQL, task.ColumnID, task.Position)
+	if err := r.db.Error; err != nil {
+		return err
+	}
+	return nil
+}
