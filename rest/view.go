@@ -93,46 +93,49 @@ func (r *restHandler) TaskEndPointDelete(rw http.ResponseWriter, req *http.Reque
 	}
 }
 
-func (r *restHandler) ColumnListEndPointGet(rw http.ResponseWriter, req *http.Request, p map[string]string) {
-	var err error
-	if p["id"] == "" {
-		columns, err := r.useCase.ListColumns()
-		if err != nil {
-			helper.Handle500(rw)
-			r.logger.Println(err)
-			return
-		}
-		err = json.NewEncoder(rw).Encode(columns)
-	} else {
-		id, _ := strconv.Atoi(p["id"])
-
-		column, err := r.useCase.GetColumn(id)
-		if err != nil {
-			helper.Handle500(rw)
-			r.logger.Println(err)
-			return
-		}
-		err = json.NewEncoder(rw).Encode(column)
+func (r *restHandler) ColumnList(rw http.ResponseWriter, req *http.Request, _ map[string]string) {
+	columns, err := r.useCase.ListColumns()
+	if err != nil {
+		helper.Handle500(rw)
+		r.logger.Println(err)
+		return
 	}
 
+	if err := json.NewEncoder(rw).Encode(columns); err != nil {
+		r.logger.Println(err)
+		helper.Handle500(rw)
+	}
+}
+
+func (r *restHandler) ColumnGet(rw http.ResponseWriter, req *http.Request, p map[string]string) {
+	id, _ := strconv.Atoi(p["id"])
+	column, err := r.useCase.GetColumn(id)
 	if err != nil {
+		helper.Handle500(rw)
+		r.logger.Println(err)
+		return
+	}
+
+	if err = json.NewEncoder(rw).Encode(column); err != nil {
 		r.logger.Println(err)
 		helper.Handle500(rw)
 	}
 }
 
 func (r *restHandler) GetMux() *http.ServeMux {
-	// todo: refactor this so it'll use regexp routing saved as a field in app
-	// and then use in http.ListenAndServe as a handler
-	TaskEndPoint := helper.RESTEndPoint{
-		//Get:    r.TaskEndPointGet,
+	TaskResource := helper.RESTEndPoint{
 		Put:    r.TaskEndPointPut,
 		Delete: r.TaskEndPointDelete,
-		Post:   r.TaskEndPointPost,
+	}
+	TaskCollection := helper.RESTEndPoint{
+		Post: r.TaskEndPointPost,
 	}
 
-	ColumnEndPoint := helper.RESTEndPoint{
-		Get: r.ColumnListEndPointGet,
+	ColumnResource := helper.RESTEndPoint{
+		Get: r.ColumnGet,
+	}
+	ColumnCollection := helper.RESTEndPoint{
+		Get: r.ColumnList,
 	}
 
 	timeTrackDecorator := helper.TimeTrack(r.logger)
@@ -143,11 +146,13 @@ func (r *restHandler) GetMux() *http.ServeMux {
 	mux.Handle("/frontend/", serveStatic)
 
 	TaskRouting := route.RegexpRouter{}
-	TaskRouting.Add(`^/task/((?P<id>\d+)/)?$`, TaskEndPoint.Dispatch)
+	TaskRouting.Add(`^/task/?$`, TaskCollection.Dispatch)
+	TaskRouting.Add(`^/task/(?P<id>\d+)/$`, TaskResource.Dispatch)
 	mux.HandleFunc("/task/", timeTrackDecorator(TaskRouting.ServeHTTP))
 
 	ColumnRouting := route.RegexpRouter{}
-	ColumnRouting.Add(`^/column/((?P<id>\d+)/)?$`, ColumnEndPoint.Dispatch)
+	ColumnRouting.Add(`^/column/?$`, ColumnCollection.Dispatch)
+	ColumnRouting.Add(`^/column/(?P<id>\d+)/$`, ColumnResource.Dispatch)
 	mux.HandleFunc("/column/", timeTrackDecorator(ColumnRouting.ServeHTTP))
 
 	mux.HandleFunc("/",
