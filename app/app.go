@@ -6,11 +6,6 @@ import (
 )
 
 type restHandler interface {
-	TaskEndPointPost(rw http.ResponseWriter, req *http.Request, p map[string]string)
-	TaskEndPointPut(rw http.ResponseWriter, req *http.Request, p map[string]string)
-	TaskEndPointDelete(rw http.ResponseWriter, req *http.Request, p map[string]string)
-	ColumnGet(rw http.ResponseWriter, req *http.Request, p map[string]string)
-	ColumnList(rw http.ResponseWriter, req *http.Request, p map[string]string)
 	GetMux() *http.ServeMux
 }
 
