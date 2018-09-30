@@ -10,6 +10,7 @@ import (
 	"strconv"
 
 	"github.com/Alkemic/go-route"
+	"github.com/Alkemic/go-route/middleware"
 	"github.com/jinzhu/gorm"
 
 	"github.com/Alkemic/gokanban/helper"
@@ -139,6 +140,7 @@ func (r *restHandler) GetMux() *http.ServeMux {
 	}
 
 	timeTrackDecorator := helper.TimeTrack(r.logger)
+	panicInterceptor := middleware.PanicInterceptorWithLogger(r.logger)
 
 	mux := http.NewServeMux()
 
@@ -146,14 +148,14 @@ func (r *restHandler) GetMux() *http.ServeMux {
 	mux.Handle("/frontend/", serveStatic)
 
 	TaskRouting := route.RegexpRouter{}
-	TaskRouting.Add(`^/task/?$`, TaskCollection.Dispatch)
-	TaskRouting.Add(`^/task/(?P<id>\d+)/$`, TaskResource.Dispatch)
-	mux.HandleFunc("/task/", timeTrackDecorator(TaskRouting.ServeHTTP))
+	TaskRouting.Add(`^/task/?$`, panicInterceptor(TaskCollection.Dispatch))
+	TaskRouting.Add(`^/task/(?P<id>\d+)/$`, panicInterceptor(TaskResource.Dispatch))
+	mux.HandleFunc("/task/", TaskRouting.ServeHTTP)
 
 	ColumnRouting := route.RegexpRouter{}
-	ColumnRouting.Add(`^/column/?$`, ColumnCollection.Dispatch)
-	ColumnRouting.Add(`^/column/(?P<id>\d+)/$`, ColumnResource.Dispatch)
-	mux.HandleFunc("/column/", timeTrackDecorator(ColumnRouting.ServeHTTP))
+	ColumnRouting.Add(`^/column/?$`, panicInterceptor(ColumnCollection.Dispatch))
+	ColumnRouting.Add(`^/column/(?P<id>\d+)/$`, panicInterceptor(ColumnResource.Dispatch))
+	mux.HandleFunc("/column/", ColumnRouting.ServeHTTP)
 
 	mux.HandleFunc("/",
 		timeTrackDecorator(func(w http.ResponseWriter, _ *http.Request) {
