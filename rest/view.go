@@ -17,12 +17,12 @@ import (
 )
 
 type restHandler struct {
-	logger  *log.Logger
-	db      *gorm.DB
-	useCase useCase
+	logger *log.Logger
+	db     *gorm.DB
+	kanban kanban
 }
 
-type useCase interface {
+type kanban interface {
 	ListColumns() ([]map[string]interface{}, error)
 	GetColumn(id int) (map[string]interface{}, error)
 	CreateTask(data map[string]string) error
@@ -32,18 +32,18 @@ type useCase interface {
 	DeleteTask(id int) error
 }
 
-func NewRestHandler(logger *log.Logger, db *gorm.DB, useCase useCase) *restHandler {
+func NewRestHandler(logger *log.Logger, db *gorm.DB, kanban kanban) *restHandler {
 	return &restHandler{
-		logger:  logger,
-		db:      db,
-		useCase: useCase,
+		logger: logger,
+		db:     db,
+		kanban: kanban,
 	}
 }
 
 func (r *restHandler) TaskEndPointPost(rw http.ResponseWriter, req *http.Request, p map[string]string) {
 	req.ParseForm()
 	data := r.toMap(req.Form)
-	if err := r.useCase.CreateTask(data); err != nil {
+	if err := r.kanban.CreateTask(data); err != nil {
 		r.logger.Println(err)
 		helper.Handle500(rw)
 	}
@@ -66,13 +66,13 @@ func (r *restHandler) TaskEndPointPut(rw http.ResponseWriter, req *http.Request,
 	var err error
 	if okB { // we are toggling checkbox
 		checkID, _ := strconv.Atoi(req.Form.Get("checkId"))
-		err = r.useCase.ToggleCheckbox(id, checkID)
+		err = r.kanban.ToggleCheckbox(id, checkID)
 	} else if okO && okC {
 		newPosition, _ := strconv.Atoi(req.Form.Get("Position"))
 		newColumnID, _ := strconv.Atoi(req.Form.Get("ColumnID"))
-		err = r.useCase.MoveTaskTo(id, newPosition, newColumnID)
+		err = r.kanban.MoveTaskTo(id, newPosition, newColumnID)
 	} else {
-		err = r.useCase.UpdateTask(id, r.toMap(req.Form))
+		err = r.kanban.UpdateTask(id, r.toMap(req.Form))
 	}
 
 	if err != nil {
@@ -83,7 +83,7 @@ func (r *restHandler) TaskEndPointPut(rw http.ResponseWriter, req *http.Request,
 
 func (r *restHandler) TaskEndPointDelete(rw http.ResponseWriter, req *http.Request, p map[string]string) {
 	id, _ := strconv.Atoi(p["id"])
-	if err := r.useCase.DeleteTask(id); err != nil {
+	if err := r.kanban.DeleteTask(id); err != nil {
 		r.logger.Println(err)
 		helper.Handle500(rw)
 		return
@@ -95,7 +95,7 @@ func (r *restHandler) TaskEndPointDelete(rw http.ResponseWriter, req *http.Reque
 }
 
 func (r *restHandler) ColumnList(rw http.ResponseWriter, req *http.Request, _ map[string]string) {
-	columns, err := r.useCase.ListColumns()
+	columns, err := r.kanban.ListColumns()
 	if err != nil {
 		helper.Handle500(rw)
 		r.logger.Println(err)
@@ -110,7 +110,7 @@ func (r *restHandler) ColumnList(rw http.ResponseWriter, req *http.Request, _ ma
 
 func (r *restHandler) ColumnGet(rw http.ResponseWriter, req *http.Request, p map[string]string) {
 	id, _ := strconv.Atoi(p["id"])
-	column, err := r.useCase.GetColumn(id)
+	column, err := r.kanban.GetColumn(id)
 	if err != nil {
 		helper.Handle500(rw)
 		r.logger.Println(err)

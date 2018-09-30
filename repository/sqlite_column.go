@@ -6,17 +6,17 @@ import (
 	"github.com/Alkemic/gokanban/model"
 )
 
-type mySQLColumnRepository struct {
+type sqliteColumnRepository struct {
 	db *gorm.DB
 }
 
-func NewMySQLColumnRepository(db *gorm.DB) *mySQLColumnRepository {
-	return &mySQLColumnRepository{
+func NewSqliteColumnRepository(db *gorm.DB) *sqliteColumnRepository {
+	return &sqliteColumnRepository{
 		db: db,
 	}
 }
 
-func (r *mySQLColumnRepository) List() ([]*model.Column, error) {
+func (r *sqliteColumnRepository) List() ([]*model.Column, error) {
 	columns := []*model.Column{}
 	q := r.db.Order("position asc").Find(&columns)
 	if q.Error != nil {
@@ -25,7 +25,7 @@ func (r *mySQLColumnRepository) List() ([]*model.Column, error) {
 	return columns, nil
 }
 
-func (r *mySQLColumnRepository) Get(id int) (*model.Column, error) {
+func (r *sqliteColumnRepository) Get(id int) (*model.Column, error) {
 	var column model.Column
 	if err := r.db.Where("id = ?", id).Find(&column).Error; err != nil {
 		return nil, err
@@ -33,7 +33,7 @@ func (r *mySQLColumnRepository) Get(id int) (*model.Column, error) {
 	return &column, nil
 }
 
-func (r *mySQLColumnRepository) Init() {
+func (r *sqliteColumnRepository) Init() {
 	r.db.FirstOrCreate(&model.Column{}, &model.Column{Name: "Backlog", Limit: 10, Position: 1})
 	r.db.FirstOrCreate(&model.Column{}, &model.Column{Name: "To Do", Limit: 10, Position: 2})
 	r.db.FirstOrCreate(&model.Column{}, &model.Column{Name: "WiP", Limit: 10, Position: 3})

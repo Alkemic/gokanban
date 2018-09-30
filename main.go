@@ -25,12 +25,12 @@ func main() {
 	if err != nil {
 		logger.Fatalf("Can't instantiate db: %s", err)
 	}
-	taskRepository := repository.NewMysqlTaskRepository(db)
-	columnRepository := repository.NewMySQLColumnRepository(db)
+	taskRepository := repository.NewSqliteTaskRepository(db)
+	columnRepository := repository.NewSqliteColumnRepository(db)
 	columnRepository.Init()
-	useCase := kanban.NewKanban(taskRepository, columnRepository)
-	rest_ := rest.NewRestHandler(logger, db, useCase)
-	application := app.NewApp(logger, rest_)
+	kanban := kanban.NewKanban(taskRepository, columnRepository)
+	rest := rest.NewRestHandler(logger, db, kanban)
+	application := app.NewApp(logger, rest)
 	application.Run(bindAddr)
 }
 
