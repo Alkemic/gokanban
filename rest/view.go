@@ -44,8 +44,7 @@ func (r *restHandler) TaskEndPointPost(rw http.ResponseWriter, req *http.Request
 	req.ParseForm()
 	data := r.toMap(req.Form)
 	if err := r.kanban.CreateTask(data); err != nil {
-		r.logger.Println(err)
-		helper.Handle500(rw)
+		panic(err)
 	}
 }
 
@@ -76,35 +75,29 @@ func (r *restHandler) TaskEndPointPut(rw http.ResponseWriter, req *http.Request,
 	}
 
 	if err != nil {
-		r.logger.Println(err)
-		helper.Handle500(rw)
+		panic(err)
 	}
 }
 
 func (r *restHandler) TaskEndPointDelete(rw http.ResponseWriter, req *http.Request, p map[string]string) {
 	id, _ := strconv.Atoi(p["id"])
 	if err := r.kanban.DeleteTask(id); err != nil {
-		r.logger.Println(err)
-		helper.Handle500(rw)
-		return
+		panic(err)
 	}
 
 	if err := json.NewEncoder(rw).Encode(map[string]string{"status": "ok"}); err != nil {
-		r.logger.Println(err)
+		panic(err)
 	}
 }
 
 func (r *restHandler) ColumnList(rw http.ResponseWriter, req *http.Request, _ map[string]string) {
 	columns, err := r.kanban.ListColumns()
 	if err != nil {
-		helper.Handle500(rw)
-		r.logger.Println(err)
-		return
+		panic(err)
 	}
 
 	if err := json.NewEncoder(rw).Encode(columns); err != nil {
-		r.logger.Println(err)
-		helper.Handle500(rw)
+		panic(err)
 	}
 }
 
@@ -112,14 +105,11 @@ func (r *restHandler) ColumnGet(rw http.ResponseWriter, req *http.Request, p map
 	id, _ := strconv.Atoi(p["id"])
 	column, err := r.kanban.GetColumn(id)
 	if err != nil {
-		helper.Handle500(rw)
-		r.logger.Println(err)
-		return
+		panic(err)
 	}
 
 	if err = json.NewEncoder(rw).Encode(column); err != nil {
-		r.logger.Println(err)
-		helper.Handle500(rw)
+		panic(err)
 	}
 }
 
