@@ -3,11 +3,14 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:7149ec2fca639b868d5983a3a130e3d634cc2f5129f2dfc305d9f9a615917e7d"
+  digest = "1:8c3637f8047fbf770d78155d2d7726ca97570cb2af1fd3bb0740d38abbef2541"
   name = "github.com/Alkemic/go-route"
-  packages = ["."]
+  packages = [
+    ".",
+    "middleware",
+  ]
   pruneopts = "UT"
-  revision = "f412c2456e1e53ce0175d6aa73ff9f220b8cdb66"
+  revision = "58a477568dc525404f41286e28512de306b8e588"
 
 [[projects]]
   digest = "1:a2c1d0e43bd3baaa071d1b9ed72c27d78169b2b269f71c105ac4ba34b1be4a39"
@@ -70,6 +73,7 @@
   analyzer-version = 1
   input-imports = [
     "github.com/Alkemic/go-route",
+    "github.com/Alkemic/go-route/middleware",
     "github.com/jinzhu/gorm",
     "github.com/mattn/go-sqlite3",
     "github.com/stretchr/testify/assert",

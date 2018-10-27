@@ -40,7 +40,8 @@ func NewRestHandler(logger *log.Logger, db *gorm.DB, kanban kanban) *restHandler
 	}
 }
 
-func (r *restHandler) TaskEndPointPost(rw http.ResponseWriter, req *http.Request, p map[string]string) {
+func (r *restHandler) TaskEndPointPost(rw http.ResponseWriter, req *http.Request) {
+	p := route.GetParams(req)
 	req.ParseForm()
 	data := r.toMap(req.Form)
 	if err := r.kanban.CreateTask(data); err != nil {
@@ -56,7 +57,8 @@ func (r *restHandler) toMap(formData url.Values) map[string]string {
 	return data
 }
 
-func (r *restHandler) TaskEndPointPut(rw http.ResponseWriter, req *http.Request, p map[string]string) {
+func (r *restHandler) TaskEndPointPut(rw http.ResponseWriter, req *http.Request) {
+	p := route.GetParams(req)
 	id, _ := strconv.Atoi(p["id"])
 	req.ParseForm()
 	_, okB := req.Form["checkId"]
@@ -79,7 +81,8 @@ func (r *restHandler) TaskEndPointPut(rw http.ResponseWriter, req *http.Request,
 	}
 }
 
-func (r *restHandler) TaskEndPointDelete(rw http.ResponseWriter, req *http.Request, p map[string]string) {
+func (r *restHandler) TaskEndPointDelete(rw http.ResponseWriter, req *http.Request) {
+	p := route.GetParams(req)
 	id, _ := strconv.Atoi(p["id"])
 	if err := r.kanban.DeleteTask(id); err != nil {
 		panic(err)
@@ -90,7 +93,7 @@ func (r *restHandler) TaskEndPointDelete(rw http.ResponseWriter, req *http.Reque
 	}
 }
 
-func (r *restHandler) ColumnList(rw http.ResponseWriter, req *http.Request, _ map[string]string) {
+func (r *restHandler) ColumnList(rw http.ResponseWriter, req *http.Request) {
 	columns, err := r.kanban.ListColumns()
 	if err != nil {
 		panic(err)
@@ -101,7 +104,8 @@ func (r *restHandler) ColumnList(rw http.ResponseWriter, req *http.Request, _ ma
 	}
 }
 
-func (r *restHandler) ColumnGet(rw http.ResponseWriter, req *http.Request, p map[string]string) {
+func (r *restHandler) ColumnGet(rw http.ResponseWriter, req *http.Request) {
+	p := route.GetParams(req)
 	id, _ := strconv.Atoi(p["id"])
 	column, err := r.kanban.GetColumn(id)
 	if err != nil {
@@ -129,7 +133,7 @@ func (r *restHandler) GetMux() *http.ServeMux {
 		Get: r.ColumnList,
 	}
 
-	timeTrackDecorator := helper.TimeTrack(r.logger)
+	timeTrackDecorator := middleware.TimeTrack(r.logger)
 	panicInterceptor := middleware.PanicInterceptorWithLogger(r.logger)
 
 	mux := http.NewServeMux()
@@ -138,20 +142,19 @@ func (r *restHandler) GetMux() *http.ServeMux {
 	mux.Handle("/frontend/", serveStatic)
 
 	TaskRouting := route.RegexpRouter{}
-	TaskRouting.Add(`^/task/?$`, panicInterceptor(TaskCollection.Dispatch))
-	TaskRouting.Add(`^/task/(?P<id>\d+)/$`, panicInterceptor(TaskResource.Dispatch))
-	mux.HandleFunc("/task/", TaskRouting.ServeHTTP)
+	TaskRouting.Add(`^/task/?$`, TaskCollection.Dispatch)
+	TaskRouting.Add(`^/task/(?P<id>\d+)/$`, TaskResource.Dispatch)
+	mux.HandleFunc("/task/", timeTrackDecorator(panicInterceptor(TaskRouting.ServeHTTP)))
 
 	ColumnRouting := route.RegexpRouter{}
-	ColumnRouting.Add(`^/column/?$`, panicInterceptor(ColumnCollection.Dispatch))
-	ColumnRouting.Add(`^/column/(?P<id>\d+)/$`, panicInterceptor(ColumnResource.Dispatch))
-	mux.HandleFunc("/column/", ColumnRouting.ServeHTTP)
+	ColumnRouting.Add(`^/column/?$`, ColumnCollection.Dispatch)
+	ColumnRouting.Add(`^/column/(?P<id>\d+)/$`, ColumnResource.Dispatch)
+	mux.HandleFunc("/column/", timeTrackDecorator(panicInterceptor(ColumnRouting.ServeHTTP)))
 
-	mux.HandleFunc("/",
-		timeTrackDecorator(func(w http.ResponseWriter, _ *http.Request) {
-			index, _ := ioutil.ReadFile("./frontend/templates/index.html")
-			io.WriteString(w, string(index))
-		}))
+	mux.HandleFunc("/", func(w http.ResponseWriter, _ *http.Request) {
+		index, _ := ioutil.ReadFile("./frontend/templates/index.html")
+		io.WriteString(w, string(index))
+	})
 
 	return mux
 }
