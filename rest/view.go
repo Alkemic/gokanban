@@ -41,7 +41,6 @@ func NewRestHandler(logger *log.Logger, db *gorm.DB, kanban kanban) *restHandler
 }
 
 func (r *restHandler) TaskEndPointPost(rw http.ResponseWriter, req *http.Request) {
-	p := route.GetParams(req)
 	req.ParseForm()
 	data := r.toMap(req.Form)
 	if err := r.kanban.CreateTask(data); err != nil {
