@@ -1,4 +1,4 @@
-package main
+package model
 
 import (
 	"github.com/jinzhu/gorm"
@@ -21,6 +21,10 @@ type Task struct {
 	ColumnID int
 
 	Position int `sql:"DEFAULT:0"`
+}
+
+func (t *Task) MoveToColumn(id int) error {
+	return nil
 }
 
 type Tag struct {
