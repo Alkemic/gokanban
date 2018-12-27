@@ -3,14 +3,14 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:8c3637f8047fbf770d78155d2d7726ca97570cb2af1fd3bb0740d38abbef2541"
+  digest = "1:e5c24ba78e0ca087cef25539385c92b44563f9e8ba7f9a0a5db9faa52922b0f9"
   name = "github.com/Alkemic/go-route"
   packages = [
     ".",
     "middleware",
   ]
   pruneopts = "UT"
-  revision = "58a477568dc525404f41286e28512de306b8e588"
+  revision = "278196cda5ba34b30395402abd1380f21cc6d715"
 
 [[projects]]
   digest = "1:a2c1d0e43bd3baaa071d1b9ed72c27d78169b2b269f71c105ac4ba34b1be4a39"
