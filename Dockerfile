@@ -1,8 +1,8 @@
-FROM golang:1.10
-COPY . /go/src/github.com/Alkemic/gokanban/
-RUN go get -u github.com/golang/dep/cmd/dep
-WORKDIR /go/src/github.com/Alkemic/gokanban/
-RUN dep ensure && go test -cover ./... && go install ./...
+FROM golang:1.11
+COPY . /gokanban/
+WORKDIR /gokanban/
+RUN go mod download && go test -cover ./... && go install ./...
+# RUN go test -cover ./... && go install ./...
 RUN strip /go/bin/gokanban
 
 FROM node:8

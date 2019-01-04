@@ -3,7 +3,7 @@ package repository
 import (
 	"github.com/jinzhu/gorm"
 
-	"github.com/Alkemic/gokanban/model"
+	"gokanban/model"
 )
 
 type sqliteColumnRepository struct {

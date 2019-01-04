@@ -6,9 +6,9 @@ import (
 	"strings"
 
 	"github.com/jinzhu/gorm"
-	"gopkg.in/russross/blackfriday.v1"
+	blackfriday "gopkg.in/russross/blackfriday.v1"
 
-	"github.com/Alkemic/gokanban/model"
+	"gokanban/model"
 )
 
 const (

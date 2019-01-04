@@ -9,11 +9,11 @@ import (
 	"net/url"
 	"strconv"
 
-	"github.com/Alkemic/go-route"
+	route "github.com/Alkemic/go-route"
 	"github.com/Alkemic/go-route/middleware"
 	"github.com/jinzhu/gorm"
 
-	"github.com/Alkemic/gokanban/helper"
+	"gokanban/helper"
 )
 
 type restHandler struct {

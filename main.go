@@ -6,11 +6,11 @@ import (
 
 	"github.com/jinzhu/gorm"
 
-	"github.com/Alkemic/gokanban/app"
-	"github.com/Alkemic/gokanban/kanban"
-	"github.com/Alkemic/gokanban/model"
-	"github.com/Alkemic/gokanban/repository"
-	"github.com/Alkemic/gokanban/rest"
+	"gokanban/app"
+	"gokanban/kanban"
+	"gokanban/model"
+	"gokanban/repository"
+	"gokanban/rest"
 )
 
 var (

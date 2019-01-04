@@ -4,8 +4,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/Alkemic/gokanban/helper"
-	"github.com/Alkemic/gokanban/model"
+	"gokanban/helper"
+	"gokanban/model"
 )
 
 type taskRepository interface {
