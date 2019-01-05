@@ -2,7 +2,7 @@ module gokanban
 
 require (
 	cloud.google.com/go v0.34.0 // indirect
-	github.com/Alkemic/go-route v0.0.0-20181028071538-278196cda5ba
+	github.com/Alkemic/go-route v0.0.0-20190105173841-9a78f75c55ad
 	github.com/davecgh/go-spew v1.1.0 // indirect
 	github.com/denisenkom/go-mssqldb v0.0.0-20181014144952-4e0d7dc8888f // indirect
 	github.com/erikstmartin/go-testdb v0.0.0-20160219214506-8d10e4a1bae5 // indirect

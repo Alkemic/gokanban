@@ -4,6 +4,7 @@ import (
 	"log"
 	"os"
 
+	"github.com/Alkemic/go-route/middleware"
 	"github.com/jinzhu/gorm"
 
 	"gokanban/app"
@@ -17,6 +18,9 @@ var (
 	bindAddr = os.Getenv("GOKANBAN_BIND_ADDR")
 	dbName   = os.Getenv("GOKANBAN_DB_FILE")
 	debug    = os.Getenv("GOKANBAN_DEBUG_SQL")
+
+	basicAuthUser     = os.Getenv("GOKANBAN_AUTH_USER")
+	basicAuthPassword = os.Getenv("GOKANBAN_AUTH_PASSWORD")
 )
 
 func main() {
@@ -29,7 +33,14 @@ func main() {
 	columnRepository := repository.NewSqliteColumnRepository(db)
 	columnRepository.Init()
 	kanban := kanban.NewKanban(taskRepository, columnRepository)
-	rest := rest.NewRestHandler(logger, db, kanban)
+	var authenticateFunc middleware.AuthFn
+	if basicAuthUser != "" && basicAuthPassword != "" {
+		logger.Println("using basic authenticate")
+		authenticateFunc = middleware.Authenticate(basicAuthUser, basicAuthPassword)
+	} else {
+		logger.Println("not using authentication")
+	}
+	rest := rest.NewRestHandler(logger, db, kanban, authenticateFunc)
 	application := app.NewApp(logger, rest)
 	application.Run(bindAddr)
 }
