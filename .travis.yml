@@ -14,7 +14,9 @@ before_install:
 - docker --version
 
 script:
-- docker build -t alkemic/gokanban .
+- COMMIT_ID=$(git rev-parse --short HEAD)
+- docker build -t alkemic/gokanban:${COMMIT_ID} .
+- docker tag alkemic/gokanban:${COMMIT_ID} alkemic/gokanban:latest
 - |
   if [ "$TRAVIS_BRANCH" == "master" ]; then
     echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_LOGIN" --password-stdin
