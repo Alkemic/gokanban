@@ -17,9 +17,10 @@ import (
 )
 
 type restHandler struct {
-	logger *log.Logger
-	db     *gorm.DB
-	kanban kanban
+	logger        *log.Logger
+	db            *gorm.DB
+	kanban        kanban
+	basicAuthFunc middleware.AuthFn
 }
 
 type kanban interface {
@@ -32,11 +33,12 @@ type kanban interface {
 	DeleteTask(id int) error
 }
 
-func NewRestHandler(logger *log.Logger, db *gorm.DB, kanban kanban) *restHandler {
+func NewRestHandler(logger *log.Logger, db *gorm.DB, kanban kanban, basicAuthFunc middleware.AuthFn) *restHandler {
 	return &restHandler{
-		logger: logger,
-		db:     db,
-		kanban: kanban,
+		logger:        logger,
+		db:            db,
+		kanban:        kanban,
+		basicAuthFunc: basicAuthFunc,
 	}
 }
 
@@ -134,7 +136,10 @@ func (r *restHandler) GetMux() *http.ServeMux {
 
 	timeTrackDecorator := middleware.TimeTrack(r.logger)
 	panicInterceptor := middleware.PanicInterceptorWithLogger(r.logger)
-
+	authenticate := middleware.Noop
+	if r.basicAuthFunc != nil {
+		authenticate = middleware.BasicAuthenticate(r.logger, r.basicAuthFunc, "gokanban")
+	}
 	mux := http.NewServeMux()
 
 	serveStatic := http.FileServer(http.Dir("."))
@@ -143,17 +148,17 @@ func (r *restHandler) GetMux() *http.ServeMux {
 	TaskRouting := route.RegexpRouter{}
 	TaskRouting.Add(`^/task/?$`, TaskCollection.Dispatch)
 	TaskRouting.Add(`^/task/(?P<id>\d+)/$`, TaskResource.Dispatch)
-	mux.HandleFunc("/task/", timeTrackDecorator(panicInterceptor(TaskRouting.ServeHTTP)))
+	mux.HandleFunc("/task/", timeTrackDecorator(panicInterceptor(authenticate(TaskRouting.ServeHTTP))))
 
 	ColumnRouting := route.RegexpRouter{}
 	ColumnRouting.Add(`^/column/?$`, ColumnCollection.Dispatch)
 	ColumnRouting.Add(`^/column/(?P<id>\d+)/$`, ColumnResource.Dispatch)
-	mux.HandleFunc("/column/", timeTrackDecorator(panicInterceptor(ColumnRouting.ServeHTTP)))
+	mux.HandleFunc("/column/", timeTrackDecorator(panicInterceptor(authenticate(ColumnRouting.ServeHTTP))))
 
-	mux.HandleFunc("/", func(w http.ResponseWriter, _ *http.Request) {
+	mux.HandleFunc("/", timeTrackDecorator(authenticate(func(w http.ResponseWriter, _ *http.Request) {
 		index, _ := ioutil.ReadFile("./frontend/templates/index.html")
 		io.WriteString(w, string(index))
-	})
+	})))
 
 	return mux
 }
