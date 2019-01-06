@@ -12,7 +12,7 @@
     <link href="/frontend/styles/main.css" rel="stylesheet">
 </head>
 
-<body ng-controller="KanbanCtrl" ng-class="{'modal-open': loading}">
+<body ng-controller="KanbanCtrl" ng-style="loading && {'overflow': 'hidden'}">
     <div class="overlay" ng-if="loading">
         <div class="spinner"><i class="glyphicon glyphicon-refresh"></i></div>
     </div>
