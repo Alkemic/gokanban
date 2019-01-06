@@ -1,5 +1,5 @@
 <div class="modal-header">
-    <button type="button" class="close" data-dismiss="modal" aria-label="Close" ng-click="$dismiss()"><span aria-hidden="true">&times;</span></button>
+    <button type="button" class="close" data-dismiss="modal" aria-label="Close" ng-click="$dismiss()" ng-disabled="deleting"><span aria-hidden="true">&times;</span></button>
     <h4 class="modal-title">Confirm deletion</h4>
 </div>
 
@@ -8,10 +8,11 @@
 </div>
 
 <div class="modal-footer">
-    <button type="submit" class="btn btn-danger" ng-click="confirm()">
-        <i class="glyphicon glyphicon-trash"></i> Yes
+    <button type="submit" class="btn btn-danger" ng-click="confirm()" ng-disabled="deleting">
+        <i class="glyphicon glyphicon-refresh spinner" ng-if="deleting"></i>
+        <i class="glyphicon glyphicon-trash" ng-if="!deleting"></i> Yes
     </button>
-    <button type="reset" class="btn btn-default" data-dismiss="modal" ng-click="$dismiss()">
+    <button type="reset" class="btn btn-default" data-dismiss="modal" ng-click="$dismiss()" ng-disabled="deleting">
         <i class="glyphicon glyphicon-remove"></i> No
     </button>
 </div>

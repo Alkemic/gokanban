@@ -3,6 +3,7 @@
         class="close"
         data-dismiss="modal"
         aria-label="Close"
+        ng-disabled="saving"
         ng-click="$dismiss()">
         <span aria-hidden="true">&times;</span>
     </button>
@@ -14,12 +15,13 @@
 <form ng-submit="save()">
     <div class="modal-body">
         <div class="form-group">
-            <label for="title">Title</label>
+            <label for="title">Title *</label>
             <input type="text"
                 class="form-control"
                 id="title"
                 placeholder="Title"
-                ng-model="form.Title" />
+                ng-model="form.Title"
+                required />
         </div>
 
         <div class="form-group">
@@ -60,13 +62,15 @@
     </div>
 
     <div class="modal-footer">
-        <button type="submit" class="btn btn-primary">
-            <i class="glyphicon glyphicon-save"></i> Save
+        <button type="submit" class="btn btn-primary" ng-disabled="saving">
+            <i class="glyphicon glyphicon-refresh spinner" ng-if="saving"></i>
+            <i class="glyphicon glyphicon-save" ng-if="!saving"></i> Save
         </button>
         <button type="reset"
             class="btn btn-default"
             data-dismiss="modal"
-            ng-click="$dismiss()">
+            ng-click="$dismiss()"
+            ng-disabled="saving">
             <i class="glyphicon glyphicon-remove"></i> Close
         </button>
     </div>

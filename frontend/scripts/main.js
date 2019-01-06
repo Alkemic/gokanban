@@ -199,6 +199,7 @@ App.controller('AddEditTaskCtrl', function(
     }
 
     $scope.save = function() {
+        $scope.saving = true;
         var data = {
             ID: $scope.form.ID,
             Title: $scope.form.Title,
@@ -218,8 +219,10 @@ App.controller('AddEditTaskCtrl', function(
         }).then(function(res) {
             parentScope.LoadColumns();
             $uibModalInstance.close();
+            $scope.saving = false;
         }, function() {
             $scope.error = 'Something went wrong';
+            $scope.saving = false;
         });
     };
 
@@ -235,13 +238,16 @@ App.controller('DeleteTaskCtrl', function(
     $scope.task = task;
 
     $scope.confirm = function() {
+        $scope.deleting = true;
         $http.delete('/task/' + task.ID + '/').then(
             function(res) {
-                console.log(res)
+                console.log(res);
                 parentScope.LoadColumns();
                 $uibModalInstance.close();
+                $scope.deleting = false;
             }, function() {
                 $scope.error = 'Something went wrong';
+                $scope.deleting = false;
             });
     };
 });
