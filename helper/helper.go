@@ -3,10 +3,8 @@ package helper
 import (
 	"fmt"
 	"regexp"
-	"strings"
 
-	"github.com/jinzhu/gorm"
-	blackfriday "gopkg.in/russross/blackfriday.v1"
+	"github.com/russross/blackfriday"
 
 	"gokanban/model"
 )
@@ -70,10 +68,6 @@ func RenderMarkdown(text string) (rendered string) {
 	))
 }
 
-func LogTask(db *gorm.DB, id, cID int, a string) {
-	db.Save(&model.TaskLog{TaskID: id, OldColumnID: cID, Action: a})
-}
-
 func toggleSingleCheckbox(t string) string {
 	i := 0
 	return checkboxRegexp.ReplaceAllStringFunc(t, func(s string) string {
@@ -113,20 +107,6 @@ func calculateTaskProgress(t string) map[string]int {
 	}
 
 	return nil
-}
-
-func PrepareTags(db *gorm.DB, s string) (tags []model.Tag) {
-	for _, value := range strings.Split(s, ",") {
-		if value == "" {
-			continue
-		}
-
-		tag := model.Tag{}
-		db.FirstOrCreate(&tag, model.Tag{Name: strings.TrimSpace(value)})
-		tags = append(tags, tag)
-	}
-
-	return tags
 }
 
 func TaskToMap(task *model.Task) map[string]interface{} {

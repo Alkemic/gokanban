@@ -1,26 +1,23 @@
 package model
 
 import (
-	"github.com/jinzhu/gorm"
-	_ "github.com/mattn/go-sqlite3"
+	"time"
 )
 
 type Task struct {
-	gorm.Model
-
-	Title               string `sql:"size:255"`
+	ID                  uint
+	Title               string
 	Description         string
-	DescriptionRendered string `gorm:"-"`
-	Color               string `sql:"size:7"`
-
-	TaskProgress map[string]int `gorm:"-"`
-
-	Tags []Tag `gorm:"many2many:task_tags;"`
-
-	Column   *Column
-	ColumnID int
-
-	Position int `sql:"DEFAULT:0"`
+	DescriptionRendered string
+	Color               NullString `json:"omitempty"`
+	TaskProgress        map[string]int
+	Tags                []*Tag
+	Column              *Column
+	ColumnID            int
+	Position            int
+	CreatedAt           time.Time
+	UpdatedAt           time.Time
+	DeletedAt           NullTime `json:"-"`
 }
 
 func (t *Task) MoveToColumn(id int) error {
@@ -28,29 +25,27 @@ func (t *Task) MoveToColumn(id int) error {
 }
 
 type Tag struct {
-	ID   uint   `gorm:"primary_key"`
-	Name string `sql:"size:127"`
+	ID   uint
+	Name string
 }
 
 type Column struct {
-	gorm.Model
-
-	Name  string `sql:"size:127"`
-	Limit int    `sql:"DEFAULT:10"`
-
-	Position int `sql:"DEFAULT:0"`
-
-	Tasks *[]Task `sql:"-"`
+	ID        uint
+	Name      string
+	Limit     int
+	Position  int
+	Tasks     []*Task
+	CreatedAt time.Time
+	UpdatedAt time.Time
+	DeletedAt NullTime `json:"-"`
 }
 
 type TaskLog struct {
-	gorm.Model
-
-	Action string
-
-	Task   Task
-	TaskID int // `sql:"type:int(10) unsigned;not null"`
-
+	ID          uint
+	Action      string
+	Task        Task
+	TaskID      int
 	OldColumn   Column
-	OldColumnID int // `sql:"type:int(10) unsigned;not null"`
+	OldColumnID int
+	CreatedAt   time.Time
 }

@@ -1,6 +1,7 @@
 package rest
 
 import (
+	"context"
 	"encoding/json"
 	"io"
 	"io/ioutil"
@@ -9,34 +10,31 @@ import (
 	"net/url"
 	"strconv"
 
-	route "github.com/Alkemic/go-route"
+	"github.com/Alkemic/go-route"
 	"github.com/Alkemic/go-route/middleware"
-	"github.com/jinzhu/gorm"
 
 	"gokanban/helper"
 )
 
 type restHandler struct {
 	logger        *log.Logger
-	db            *gorm.DB
 	kanban        kanban
 	basicAuthFunc middleware.AuthFn
 }
 
 type kanban interface {
-	ListColumns() ([]map[string]interface{}, error)
-	GetColumn(id int) (map[string]interface{}, error)
-	CreateTask(data map[string]string) error
-	ToggleCheckbox(id, checkboxID int) error
-	MoveTaskTo(id, newPosition, newColumnID int) error
-	UpdateTask(id int, data map[string]string) error
-	DeleteTask(id int) error
+	ListColumns(ctx context.Context) ([]map[string]interface{}, error)
+	GetColumn(ctx context.Context, id int) (map[string]interface{}, error)
+	CreateTask(ctx context.Context, data map[string]string) error
+	ToggleCheckbox(ctx context.Context, id, checkboxID int) error
+	MoveTaskTo(ctx context.Context, id, newPosition, newColumnID int) error
+	UpdateTask(ctx context.Context, id int, data map[string]string) error
+	DeleteTask(ctx context.Context, id int) error
 }
 
-func NewRestHandler(logger *log.Logger, db *gorm.DB, kanban kanban, basicAuthFunc middleware.AuthFn) *restHandler {
+func NewRestHandler(logger *log.Logger, kanban kanban, basicAuthFunc middleware.AuthFn) *restHandler {
 	return &restHandler{
 		logger:        logger,
-		db:            db,
 		kanban:        kanban,
 		basicAuthFunc: basicAuthFunc,
 	}
@@ -44,8 +42,9 @@ func NewRestHandler(logger *log.Logger, db *gorm.DB, kanban kanban, basicAuthFun
 
 func (r *restHandler) TaskEndPointPost(rw http.ResponseWriter, req *http.Request) {
 	req.ParseForm()
+	ctx := req.Context()
 	data := r.toMap(req.Form)
-	if err := r.kanban.CreateTask(data); err != nil {
+	if err := r.kanban.CreateTask(ctx, data); err != nil {
 		panic(err)
 	}
 }
@@ -65,16 +64,17 @@ func (r *restHandler) TaskEndPointPut(rw http.ResponseWriter, req *http.Request)
 	_, okB := req.Form["checkId"]
 	_, okO := req.Form["Position"]
 	_, okC := req.Form["ColumnID"]
+	ctx := req.Context()
 	var err error
 	if okB { // we are toggling checkbox
 		checkID, _ := strconv.Atoi(req.Form.Get("checkId"))
-		err = r.kanban.ToggleCheckbox(id, checkID)
+		err = r.kanban.ToggleCheckbox(ctx, id, checkID)
 	} else if okO && okC {
 		newPosition, _ := strconv.Atoi(req.Form.Get("Position"))
 		newColumnID, _ := strconv.Atoi(req.Form.Get("ColumnID"))
-		err = r.kanban.MoveTaskTo(id, newPosition, newColumnID)
+		err = r.kanban.MoveTaskTo(ctx, id, newPosition, newColumnID)
 	} else {
-		err = r.kanban.UpdateTask(id, r.toMap(req.Form))
+		err = r.kanban.UpdateTask(ctx, id, r.toMap(req.Form))
 	}
 
 	if err != nil {
@@ -85,7 +85,8 @@ func (r *restHandler) TaskEndPointPut(rw http.ResponseWriter, req *http.Request)
 func (r *restHandler) TaskEndPointDelete(rw http.ResponseWriter, req *http.Request) {
 	p := route.GetParams(req)
 	id, _ := strconv.Atoi(p["id"])
-	if err := r.kanban.DeleteTask(id); err != nil {
+	ctx := req.Context()
+	if err := r.kanban.DeleteTask(ctx, id); err != nil {
 		panic(err)
 	}
 
@@ -95,7 +96,8 @@ func (r *restHandler) TaskEndPointDelete(rw http.ResponseWriter, req *http.Reque
 }
 
 func (r *restHandler) ColumnList(rw http.ResponseWriter, req *http.Request) {
-	columns, err := r.kanban.ListColumns()
+	ctx := req.Context()
+	columns, err := r.kanban.ListColumns(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -108,7 +110,8 @@ func (r *restHandler) ColumnList(rw http.ResponseWriter, req *http.Request) {
 func (r *restHandler) ColumnGet(rw http.ResponseWriter, req *http.Request) {
 	p := route.GetParams(req)
 	id, _ := strconv.Atoi(p["id"])
-	column, err := r.kanban.GetColumn(id)
+	ctx := req.Context()
+	column, err := r.kanban.GetColumn(ctx, id)
 	if err != nil {
 		panic(err)
 	}
