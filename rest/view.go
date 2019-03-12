@@ -12,8 +12,6 @@ import (
 
 	"github.com/Alkemic/go-route"
 	"github.com/Alkemic/go-route/middleware"
-
-	"gokanban/helper"
 )
 
 type restHandler struct {
@@ -122,18 +120,18 @@ func (r *restHandler) ColumnGet(rw http.ResponseWriter, req *http.Request) {
 }
 
 func (r *restHandler) GetMux() *http.ServeMux {
-	TaskResource := helper.RESTEndPoint{
+	TaskResource := RESTEndPoint{
 		Put:    r.TaskEndPointPut,
 		Delete: r.TaskEndPointDelete,
 	}
-	TaskCollection := helper.RESTEndPoint{
+	TaskCollection := RESTEndPoint{
 		Post: r.TaskEndPointPost,
 	}
 
-	ColumnResource := helper.RESTEndPoint{
+	ColumnResource := RESTEndPoint{
 		Get: r.ColumnGet,
 	}
-	ColumnCollection := helper.RESTEndPoint{
+	ColumnCollection := RESTEndPoint{
 		Get: r.ColumnList,
 	}
 

@@ -4,11 +4,10 @@ import (
 	"context"
 	"database/sql"
 
-	"gokanban/repository"
-
 	"github.com/pkg/errors"
 
 	"gokanban/model"
+	"gokanban/repository"
 )
 
 const (

@@ -7,7 +7,7 @@ import (
 
 	"github.com/pkg/errors"
 
-	"gokanban/helper"
+	"gokanban/markdown"
 	"gokanban/model"
 )
 
@@ -52,7 +52,7 @@ func (k *kanban) ListColumns(ctx context.Context) ([]map[string]interface{}, err
 		return nil, err
 	}
 
-	columnsMap := helper.LoadColumnsAsMap(columns)
+	columnsMap := columnsToMap(columns)
 
 	for i, column := range columnsMap {
 		tasks, err := k.taskRepository.List(ctx, column["ID"].(uint))
@@ -64,7 +64,7 @@ func (k *kanban) ListColumns(ctx context.Context) ([]map[string]interface{}, err
 		if err != nil {
 			return nil, errors.Wrapf(err, "cannot load tags for task")
 		}
-		columnsMap[i]["Tasks"] = helper.LoadTasksAsMap(tasks)
+		columnsMap[i]["Tasks"] = tasksToMap(tasks)
 	}
 
 	return columnsMap, nil
@@ -76,7 +76,7 @@ func (k *kanban) GetColumn(ctx context.Context, id int) (map[string]interface{},
 		return nil, errors.Wrapf(err, "cannot select column '%d'", id)
 	}
 
-	columnMap := helper.ColumnToMap(column)
+	columnMap := columnToMap(column)
 	tasks, err := k.taskRepository.List(ctx, column.ID)
 	if err != nil {
 		return nil, errors.Wrapf(err, "cannot fetch tasks list for column '%d'", id)
@@ -86,7 +86,7 @@ func (k *kanban) GetColumn(ctx context.Context, id int) (map[string]interface{},
 	if err != nil {
 		return nil, errors.Wrapf(err, "cannot load tags for task")
 	}
-	columnMap["Tasks"] = helper.LoadTasksAsMap(tasks)
+	columnMap["Tasks"] = tasksToMap(tasks)
 
 	return columnMap, nil
 }
@@ -149,7 +149,7 @@ func (k *kanban) ToggleCheckbox(ctx context.Context, id, checkboxID int) error {
 	if err != nil {
 		return err
 	}
-	task.Description = helper.ToggleCheckbox(task.Description, checkboxID)
+	task.Description = markdown.ToggleCheckbox(task.Description, checkboxID)
 	return k.taskRepository.Save(ctx, task)
 }
 

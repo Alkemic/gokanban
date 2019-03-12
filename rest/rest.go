@@ -1,8 +1,6 @@
-package helper
+package rest
 
-import (
-	"net/http"
-)
+import "net/http"
 
 type RESTEndPoint struct {
 	Get     http.HandlerFunc

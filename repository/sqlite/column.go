@@ -5,11 +5,10 @@ import (
 	"database/sql"
 	"time"
 
-	"gokanban/repository"
-
 	"github.com/pkg/errors"
 
 	"gokanban/model"
+	"gokanban/repository"
 )
 
 const (

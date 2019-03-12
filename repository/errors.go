@@ -1,6 +1,8 @@
 package repository
 
-import "errors"
+import (
+	"errors"
+)
 
 var (
 	ErrMoreThanOneRow = errors.New("statement returned more than one row")
