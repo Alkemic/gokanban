@@ -7,9 +7,8 @@
 
     <title>goKanban</title>
 
-    <link href="/frontend/node_modules/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="/frontend/node_modules/angular-ui-bootstrap/dist/ui-bootstrap-csp.css" rel="stylesheet">
-    <link href="/frontend/styles/main.css" rel="stylesheet">
+    <link href="/static/styles/vendor.css" rel="stylesheet">
+    <link href="/static/styles/kanban.css" rel="stylesheet">
 </head>
 
 <body ng-controller="KanbanCtrl" ng-style="loading && {'overflow': 'hidden'}">
@@ -119,12 +118,8 @@
         </div>
     </script>
 
-    <script src="/frontend/node_modules/jquery/dist/jquery.min.js"></script>
-    <script src="/frontend/node_modules/angular/angular.min.js"></script>
-    <script src="/frontend/node_modules/angular-drag-and-drop-lists/angular-drag-and-drop-lists.js"></script>
-    <script src="/frontend/node_modules/angular-ui-bootstrap/dist/ui-bootstrap-tpls.js"></script>
-    <script src="/frontend/node_modules/angular-sanitize/angular-sanitize.min.js"></script>
-
-    <script src="/frontend/scripts/main.js"></script>
+    <script src="/static/scripts/vendor.js"></script>
+    <script src="/static/scripts/kanban.templates.js"></script>
+    <script src="/static/scripts/kanban.js"></script>
 </body>
 </html>

@@ -1,17 +1,20 @@
-FROM golang:1.11
-COPY . /gokanban/
-WORKDIR /gokanban/
-RUN go mod download && go test -cover ./... && go install ./...
-RUN strip /go/bin/gokanban
+FROM golang:1.15 as backend
+COPY . /build
+WORKDIR /build
+RUN go mod download && \
+    CGO_ENABLED=0 GOOS=linux go build -installsuffix cgo -o gokanban . && \
+    strip gokanban
+ADD https://github.com/golang-migrate/migrate/releases/download/v4.14.1/migrate.linux-amd64.tar.gz migrate.linux-amd64.tar.gz
+RUN tar zxvf migrate.linux-amd64.tar.gz
 
-FROM node:8
+FROM node:6 as frontend
 COPY ./frontend /frontend
-RUN (cd /frontend && npm i)
+RUN (cd /frontend && npm i && PRODUCTION=true ./node_modules/.bin/gulp build)
 
-FROM alpine:3.8
-RUN mkdir /lib64 && ln -s /lib/libc.musl-x86_64.so.1 /lib64/ld-linux-x86-64.so.2
-COPY --from=0 /go/bin/gokanban /gokanban
-COPY --from=1 /frontend /frontend
+FROM scratch
+COPY --from=backend /build/gokanban /gokanban
+COPY --from=frontend /static /static
+COPY --from=frontend /frontend/templates/index.html /frontend/templates/index.html
 
 EXPOSE 8080
 

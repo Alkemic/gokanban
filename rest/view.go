@@ -143,8 +143,8 @@ func (r *restHandler) GetMux() *http.ServeMux {
 	}
 	mux := http.NewServeMux()
 
-	serveStatic := http.FileServer(http.Dir("."))
-	mux.Handle("/frontend/", serveStatic)
+	serveStatic := http.FileServer(http.Dir("static"))
+	mux.Handle("/static/", http.StripPrefix("/static", serveStatic))
 
 	TaskRouting := route.RegexpRouter{}
 	TaskRouting.Add(`^/task/?$`, TaskCollection.Dispatch)
