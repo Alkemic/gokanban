@@ -1,3 +1,5 @@
+FROM busybox
+
 FROM golang:1.15 as backend
 COPY . /build
 WORKDIR /build
@@ -15,7 +17,10 @@ FROM scratch
 COPY --from=backend /build/gokanban /gokanban
 COPY --from=frontend /static /static
 COPY --from=frontend /frontend/templates/index.html /frontend/templates/index.html
+COPY --from=busybox /bin/busybox /bin/busybox
+COPY --from=busybox /bin/sh /bin/sh
 
 EXPOSE 8080
 
 CMD "/gokanban"
+CMD /migrate -path /migrations/ -database "mysql://${DB_DSN}" up; /webrss
