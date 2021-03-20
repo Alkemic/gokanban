@@ -2,7 +2,8 @@ package repository
 
 import (
 	"context"
-	"database/sql"
+
+	"github.com/jmoiron/sqlx"
 )
 
 const (
@@ -10,10 +11,10 @@ const (
 )
 
 type sqliteTaskLogRepository struct {
-	db *sql.DB
+	db *sqlx.DB
 }
 
-func NewSQLiteTaskLogRepository(db *sql.DB) *sqliteTaskLogRepository {
+func NewSQLiteTaskLogRepository(db *sqlx.DB) *sqliteTaskLogRepository {
 	return &sqliteTaskLogRepository{
 		db: db,
 	}

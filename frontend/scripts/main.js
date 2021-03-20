@@ -24,7 +24,8 @@ angular.module(
             $compile(element, null, -9999)(scope)
         })
     }
-})).filter("trustHtml", ($sce) => (text) => $sce.trustAsHtml(text)).controller("KanbanCtrl", ($scope, $log, $uibModal, $http, $httpParamSerializer) => {
+})).filter("trustHtml", ($sce) => (text) => $sce.trustAsHtml(text))
+.controller("KanbanCtrl", ($scope, $log, $uibModal, $http, $httpParamSerializer) => {
     $scope.colors = [
     "#ff0000", "#ff3300", "#ff6600", "#ff9900", "#ffcc00", "#ffff00",
     "#ccff00", "#99ff00", "#66ff00", "#33ff00", "#00ff00", "#00ff33",
@@ -155,6 +156,18 @@ angular.module(
             $scope.error = "Something went wrong"
         })
     }
+
+    $scope.editUser = user => {
+        $uibModal.open({
+            templateUrl: "edit_user.html",
+            controller: "EditUserCtrl",
+            size: "small",
+            resolve: {
+                user: () => user,
+                parentScope: () => $scope,
+            }
+        })
+    }
 }).controller("AddEditTaskCtrl", ($scope, $uibModalInstance, $http, $httpParamSerializer, task, column, parentScope) => {
     $scope.colors = parentScope.colors
     $scope.column = column
@@ -224,4 +237,24 @@ angular.module(
                 })
         }, 100)
     }
+}).controller("EditUserCtrl", ($scope, $uibModalInstance, $http, $window, user) => {
+    $scope.form = angular.copy(user)
+    $scope.save = () => {
+        $scope.saving = true
+        let postData = `name=${encodeURIComponent($scope.form.name)}&email=${encodeURIComponent($scope.form.email)}&password=${$scope.form.password?encodeURIComponent($scope.form.password):''}`
+        $http({
+            method: 'POST',
+            url: `/user/`,
+            data: postData,
+            headers: {'Content-Type': 'application/x-www-form-urlencoded'}
+        }).then(() => {
+            $window.location.reload()
+            $uibModalInstance.close()
+        }, () => {
+            $scope.error = "Something went wrong"
+            $scope.saving = false
+        })
+    }
+
+    $scope.cancel = $uibModalInstance.dismiss
 })

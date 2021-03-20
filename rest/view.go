@@ -3,8 +3,7 @@ package rest
 import (
 	"context"
 	"encoding/json"
-	"io"
-	"io/ioutil"
+	"html/template"
 	"log"
 	"net/http"
 	"net/url"
@@ -12,12 +11,16 @@ import (
 
 	"github.com/Alkemic/go-route"
 	"github.com/Alkemic/go-route/middleware"
+
+	"gokanban/account"
+	"gokanban/repository"
 )
 
 type restHandler struct {
-	logger        *log.Logger
-	kanban        kanban
-	basicAuthFunc middleware.AuthFn
+	logger                 *log.Logger
+	kanban                 kanban
+	authenticateHandler    *account.AuthenticateHandler
+	authenticateMiddleware *account.Middleware
 }
 
 type kanban interface {
@@ -30,11 +33,12 @@ type kanban interface {
 	DeleteTask(ctx context.Context, id int) error
 }
 
-func NewRestHandler(logger *log.Logger, kanban kanban, basicAuthFunc middleware.AuthFn) *restHandler {
+func NewRestHandler(logger *log.Logger, kanban kanban, authenticateHandler *account.AuthenticateHandler, authenticateMiddleware *account.Middleware) *restHandler {
 	return &restHandler{
-		logger:        logger,
-		kanban:        kanban,
-		basicAuthFunc: basicAuthFunc,
+		logger:                 logger,
+		kanban:                 kanban,
+		authenticateMiddleware: authenticateMiddleware,
+		authenticateHandler:    authenticateHandler,
 	}
 }
 
@@ -137,10 +141,7 @@ func (r *restHandler) GetMux() *http.ServeMux {
 
 	timeTrackDecorator := middleware.TimeTrack(r.logger)
 	panicInterceptor := middleware.PanicInterceptorWithLogger(r.logger)
-	authenticate := middleware.Noop
-	if r.basicAuthFunc != nil {
-		authenticate = middleware.BasicAuthenticate(r.logger, r.basicAuthFunc, "gokanban")
-	}
+	authenticate := r.authenticateMiddleware.LoginRequiredMiddleware
 	mux := http.NewServeMux()
 
 	serveStatic := http.FileServer(http.Dir("static"))
@@ -156,10 +157,30 @@ func (r *restHandler) GetMux() *http.ServeMux {
 	ColumnRouting.Add(`^/column/(?P<id>\d+)/$`, ColumnResource.Dispatch)
 	mux.HandleFunc("/column/", timeTrackDecorator(panicInterceptor(authenticate(ColumnRouting.ServeHTTP))))
 
-	mux.HandleFunc("/", timeTrackDecorator(authenticate(func(w http.ResponseWriter, _ *http.Request) {
-		index, _ := ioutil.ReadFile("./frontend/templates/index.html")
-		io.WriteString(w, string(index))
+	mux.HandleFunc("/", timeTrackDecorator(authenticate(func(rw http.ResponseWriter, req *http.Request) {
+		tmpl := template.Must(template.New("index.html").Funcs(map[string]interface{}{
+			"marshal": func(v interface{}) template.JS {
+				a, _ := json.Marshal(v)
+				return template.JS(a)
+			},
+		}).Delims("[[", "]]").ParseFiles("frontend/templates/index.html"))
+		tmplData := struct {
+			User      repository.User
+			LogoutURL string
+		}{
+			User:      account.GetUser(req),
+			LogoutURL: account.LogoutPageURL,
+		}
+		if err := tmpl.ExecuteTemplate(rw, "index.html", tmplData); err != nil {
+			r.logger.Println("cannot execute template:", err)
+			http.Error(rw, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			return
+		}
 	})))
+
+	mux.HandleFunc(account.LoginPageURL, r.authenticateHandler.Login)
+	mux.HandleFunc(account.LogoutPageURL, r.authenticateHandler.Login)
+	mux.HandleFunc("/user/", authenticate(r.authenticateHandler.Edit))
 
 	return mux
 }

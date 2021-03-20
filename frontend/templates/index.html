@@ -29,6 +29,10 @@
                 </div>
 
                 <form class="navbar-form navbar-right">
+                    <button class="btn btn-primary btn-sm" ng-click="editUser([[ marshal .User ]])">
+                        <i class="glyphicon glyphicon-user"></i> Edit user [[ .User.Name ]]
+                    </button>
+                    <a href="[[ .LogoutURL ]]"><i class="glyphicon glyphicon-log-out"></i> Logout</a>
                     <input type="text" class="form-control" ng-model="searchPhrase" placeholder="Search...">
                 </form>
             </div>

@@ -5,6 +5,8 @@ import (
 	"database/sql"
 	"time"
 
+	"github.com/jmoiron/sqlx"
+
 	"github.com/pkg/errors"
 
 	"gokanban/model"
@@ -17,10 +19,10 @@ const (
 )
 
 type sqliteColumnRepository struct {
-	db *sql.DB
+	db *sqlx.DB
 }
 
-func NewSqliteColumnRepository(dbpool *sql.DB) *sqliteColumnRepository {
+func NewSqliteColumnRepository(dbpool *sqlx.DB) *sqliteColumnRepository {
 	return &sqliteColumnRepository{
 		db: dbpool,
 	}

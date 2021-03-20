@@ -2,12 +2,15 @@ package main
 
 import (
 	"database/sql"
+	"fmt"
 	"log"
 	"os"
+	"time"
 
-	"github.com/Alkemic/go-route/middleware"
+	"github.com/jmoiron/sqlx"
 	_ "github.com/mattn/go-sqlite3"
 
+	"gokanban/account"
 	"gokanban/app"
 	"gokanban/kanban"
 	repository "gokanban/repository/sqlite"
@@ -17,9 +20,6 @@ import (
 var (
 	bindAddr = os.Getenv("GOKANBAN_BIND_ADDR")
 	dbName   = os.Getenv("GOKANBAN_DB_FILE")
-
-	basicAuthUser     = os.Getenv("GOKANBAN_AUTH_USER")
-	basicAuthPassword = os.Getenv("GOKANBAN_AUTH_PASSWORD")
 )
 
 func main() {
@@ -36,28 +36,25 @@ func main() {
 	taskLogRepository := repository.NewSQLiteTaskLogRepository(db)
 	kanban := kanban.NewKanban(taskRepository, columnRepository, taskLogRepository)
 
-	var authenticateFunc middleware.AuthFn
-	if basicAuthUser != "" && basicAuthPassword != "" {
-		logger.Println("using basic authenticate")
-		authenticateFunc = middleware.Authenticate(basicAuthUser, basicAuthPassword)
-	} else {
-		logger.Println("not using authentication")
-	}
+	settingsRepository := repository.NewSettingsRepository(db)
+	sessionRepository := repository.NewSessionRepository(28 * 24 * time.Hour)
+	authenticateHandler := account.NewAuthenticateHandler(logger, settingsRepository, sessionRepository)
+	authenticateMiddleware := account.NewAuthenticateMiddleware(logger, settingsRepository, sessionRepository)
 
-	rest := rest.NewRestHandler(logger, kanban, authenticateFunc)
+	rest := rest.NewRestHandler(logger, kanban, authenticateHandler, authenticateMiddleware)
 	application := app.NewApp(logger, rest)
 	application.Run(bindAddr)
 }
 
-func InitDB(dbName string) (*sql.DB, error, func()) {
+func InitDB(dbName string) (*sqlx.DB, error, func()) {
 	db, err := sql.Open("sqlite3", dbName)
-	if err != nil {
-		log.Fatal(err)
-	}
 	if err != nil {
 		return nil, err, nil
 	}
-	return db, nil, func() {
+	if err := db.Ping(); err != nil {
+		return nil, fmt.Errorf("error pinging db: %w", err), nil
+	}
+	return sqlx.NewDb(db, "mysql"), nil, func() {
 		db.Close()
 	}
 }

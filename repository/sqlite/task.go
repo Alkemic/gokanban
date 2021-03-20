@@ -4,6 +4,8 @@ import (
 	"context"
 	"database/sql"
 
+	"github.com/jmoiron/sqlx"
+
 	"github.com/pkg/errors"
 
 	"gokanban/model"
@@ -27,10 +29,10 @@ const (
 )
 
 type sqliteTaskRepository struct {
-	db *sql.DB
+	db *sqlx.DB
 }
 
-func NewSqliteTaskRepository(db *sql.DB) *sqliteTaskRepository {
+func NewSqliteTaskRepository(db *sqlx.DB) *sqliteTaskRepository {
 	return &sqliteTaskRepository{
 		db: db,
 	}

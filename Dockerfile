@@ -23,4 +23,4 @@ COPY --from=busybox /bin/sh /bin/sh
 EXPOSE 8080
 
 CMD "/gokanban"
-CMD /migrate -path /migrations/ -database "mysql://${DB_DSN}" up; /webrss
+CMD /migrate -path /migrations/ -database "sqlite://${GOKANBAN_DB_FILE}" up; /webrss

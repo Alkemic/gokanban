@@ -1,0 +1,30 @@
+<form name="userForm">
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+        <h4 class="modal-title">Edit user</h4>
+    </div>
+    <div class="modal-body">
+        <div class="alert alert-danger alert-dismissible" role="alert" ng-show="error">
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            {{ error }}
+        </div>
+
+        <div class="form-group">
+            <label for="edit_username">Username</label>
+            <input type="text" class="form-control" id="edit_username" placeholder="Username" required="required" ng-model="form.name">
+        </div>
+        <div class="form-group">
+            <label for="edit_password">Password</label>
+            <input type="password" class="form-control" id="edit_password" placeholder="New password" autocomplete="new-password" ng-model="form.password">
+            <span class="small">If empty, password won't be updated</span>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button type="reset" class="btn btn-default" data-dismiss="modal" ng-disabled="saving" ng-click="cancel()">
+            <i class="glyphicon glyphicon-remove"></i> Close
+        </button>
+        <button type="submit" class="btn btn-primary" ng-disabled="saving || userForm.$invalid" ng-click="save()">
+            <i class="glyphicon" ng-class="{'glyphicon-save': !saving, 'glyphicon-refresh spinning': saving}"></i> Save
+        </button>
+    </div>
+</form>
