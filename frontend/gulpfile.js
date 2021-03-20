@@ -103,10 +103,14 @@ const generateScriptsTask = scripts => () => gulp.src(scripts.src)
     .pipe(gulp.dest(scripts.dest))
 
 const styles = generateStylesProcessor(config.styles)
+styles.displayName = "styles"
 const vendorStyles = generateStylesProcessor(config.vendorStyles)
+vendorStyles.displayName = "vendor styles"
 
 const scripts = generateScriptsTask(config.scripts)
+scripts.displayName = "scripts"
 const vendorScripts = generateScriptsTask(config.vendorScripts)
+vendorScripts.displayName = "vendor scripts"
 
 const copy = (cb) => {
     config.files.forEach(file => gulp.src(file.src).pipe(gulp.dest(file.dest)))
