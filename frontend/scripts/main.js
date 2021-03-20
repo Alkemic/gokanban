@@ -65,7 +65,7 @@ angular.module(
         opts = opts || {}
         var modalInstance = $uibModal.open({
             animation: $scope.animationsEnabled,
-            templateUrl: "/frontend/templates/add_task.html",
+            templateUrl: "add_task.html",
             controller: "AddEditTaskCtrl",
             size: "lg",
             resolve: {
@@ -96,7 +96,7 @@ angular.module(
     $scope.DeleteTask = (task) => {
         var modalInstance = $uibModal.open({
             animation: $scope.animationsEnabled,
-            templateUrl: "/frontend/templates/delete_task.html",
+            templateUrl: "delete_task.html",
             controller: "DeleteTaskCtrl",
             size: "sm",
             resolve: {
@@ -129,7 +129,7 @@ angular.module(
     $scope.TaskOrder = (column) => {
         $uibModal.open({
             animation: $scope.animationsEnabled,
-            templateUrl: "/frontend/templates/order_tasks.html",
+            templateUrl: "order_tasks.html",
             controller: "OrderTasksCtrl",
             size: "xlg",
             resolve: {
@@ -203,7 +203,7 @@ angular.module(
         })
     }
 
-    $scope.cancel = $modalInstance.dismiss
+    $scope.cancel = $uibModalInstance.dismiss
 }).controller("DeleteTaskCtrl", ($scope, $uibModalInstance, $http, task, parentScope) => {
     $scope.task = task
 
