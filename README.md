@@ -24,3 +24,8 @@ And install frontend requirements.
 
 * Install [golang migrate](https://github.com/golang-migrate/migrate/tree/master/cmd/migrate#installation)
 * Migrate using ``migrate -path ./migrations -database sqlite3://db.sqlite up``
+
+## Auth
+
+* Only single user
+* Default email / password is `admin` / `admin`
