@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>draggable</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <script src="/frontend/scripts/new.js"></script>
+    <style>
+        body {user-select: none;}
+        .kcol > div {padding: 5px; margin: 10px; border: 1px solid grey;}
+        .kcol > div::backdrop { border-style: dashed;}
+        .kcol > div:-moz-drag-over { border-style: dot-dash;}
+        .isDragging { border: 1px dot-dot-dash red;}
+        .dragover{ background: red !important;}
+
+        .isOver {background: pink !important;}
+
+        /*body * {pointer-events: none;}*/
+        .task {
+            margin-bottom: 8px;
+        }
+        .task .card-heading {
+            position: relative;
+            padding: 0;
+        }
+        .task .card-heading h3.card-title {
+            font-weight: bold;
+            margin-right: 18px;
+            padding: 5px;
+        }
+        .task .card-heading div.btn-group {
+            position: absolute;
+            top: 6px;
+            right: 6px;
+        }
+        .task .card-heading i.menu {
+            cursor: pointer;
+            opacity: 0.6;
+        }
+        .task:hover .card-heading i.menu {
+            transition: opacity 0.33s;
+            opacity: 1;
+        }
+        .task .card-body {
+            padding: 5px;
+            overflow: hidden;
+            word-break: break-all;
+        }
+        .task .card-body label {
+            margin-bottom: 0px;
+            font-weight: normal;
+        }
+        .task .card-body p {
+            margin: 0 0 5px 0;
+        }
+        .task .card-body .progress {
+            height: 17px;
+            margin: 3px 0;
+            position: relative;
+        }
+        .task .card-body .progress span {
+            position: absolute;
+            display: block;
+            width: 100%;
+            color: black;
+            font-size: 11px;
+        }
+        .task .card-body ul, .task .card-body ol {
+            padding-left: 20px;
+        }
+        .task .dropdown-menu>li>a {
+            padding: 3px 10px;
+        }
+
+        .tasks-container {
+            padding: 8px 8px 0 8px !important;
+        }
+        .tasks-container .tasks-list {
+            padding: 8px;
+            list-style: none;
+            margin: 0;
+            min-height: 200px;
+        }
+
+    </style>
+</head>
+<body>
+
+
+<div id="board" class="row mb-3 align-content-center">
+    <div ondragenter="columnOnDragEnter(event)" ondragleave="columnOnDragLeave(event)" class="kcol col-3 themed-grid-col" ondragover="columnOnDragOver(event)" style="background: #00B0E4">
+        <div class="card">
+            <div class="card-body">
+                This is some text within a card body.
+            </div>
+        </div>
+
+        <div class="task card">
+            <div class="card-heading"
+                 ng-style="{
+                        background: task.Color ? hexToRgbA(task.Color, 0.3) : null,
+                        borderColor: task.Color ? hexToRgbA(task.Color, 0.6) : null
+                    }">
+                <h3 class="card-title">{{ task.Title }}</h3>
+                <div class="btn-group" uib-dropdown is-open="status.isopen">
+                    <i class="menu glyphicon glyphicon-menu-hamburger"
+                       uib-dropdown-toggle
+                       ng-disabled="disabled"></i>
+                    <ul uib-dropdown-menu role="menu"  aria-labelledby="simple-btn-keyboard-nav">
+                        <li role="menuitem"><a ng-click="AddEditTask({task: task})">
+                            <i class="glyphicon glyphicon-edit"></i> Edit</a>
+                        </li>
+                        <li class="divider"></li>
+                        <li role="menuitem">
+                            <a ng-click="DeleteTask(task)"><i class="glyphicon glyphicon-trash"></i> Delete</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <div class="card-body" ng-if="task.Description || task.Tags.length">
+                <span ng-bind-html="task.DescriptionRendered | trustHtml" compile-template></span>
+                <div class="progress" ng-if="task.TaskProgress">
+                    <div class="progress-bar"
+                         role="progressbar"
+                         ng-style="{width: 100*(task.TaskProgress.Done/(task.TaskProgress.ToDo + task.TaskProgress.Done)) + '%'}">
+                        <span>{{ task.TaskProgress.Done }}/{{ task.TaskProgress.ToDo + task.TaskProgress.Done }}</span>
+                    </div>
+                </div>
+                <div class="tags" ng-if="task.Tags.length">
+                    <span class="label label-primary" ng-repeat="tag in task.Tags">{{tag.Name}}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+<!--    <div ondragenter="columnOnDragEnter(event)" ondragleave="columnOnDragLeave(event)" class="kcol col-3 themed-grid-col" ondragover="columnOnDragOver(event)" style="background: #6edff6">-->
+<!--        <div class="elementx" draggable="true" ondragend="dragEnd()" ondrop="onDrop(event)" ondragenter="dragEnter(event)" ondragover="dragOver(event)" ondragstart="dragStart(event)">Apples 1</div>-->
+<!--        <div class="elementx" draggable="true" ondragend="dragEnd()" ondrop="onDrop(event)" ondragenter="dragEnter(event)" ondragover="dragOver(event)" ondragstart="dragStart(event)">Oranges 1</div>-->
+<!--        <div class="elementx" draggable="true" ondragend="dragEnd()" ondrop="onDrop(event)" ondragenter="dragEnter(event)" ondragover="dragOver(event)" ondragstart="dragStart(event)">Bananas 1</div>-->
+<!--        <div class="elementx" draggable="true" ondragend="dragEnd()" ondrop="onDrop(event)" ondragenter="dragEnter(event)" ondragover="dragOver(event)" ondragstart="dragStart(event)">Strawberries 1</div>-->
+<!--    </div>-->
+<!--    <div ondragenter="columnOnDragEnter(event)" ondragleave="columnOnDragLeave(event)" class="kcol col-3 themed-grid-col" ondragover="columnOnDragOver(event)" style="background: #99cc00">-->
+<!--        <div class="elementx" draggable="true" ondragend="dragEnd()" ondrop="onDrop(event)" ondragenter="dragEnter(event)" ondragover="dragOver(event)" ondragstart="dragStart(event)">Apples 2</div>-->
+<!--        <div class="elementx" draggable="true" ondragend="dragEnd()" ondrop="onDrop(event)" ondragenter="dragEnter(event)" ondragover="dragOver(event)" ondragstart="dragStart(event)">Oranges 2</div>-->
+<!--        <div class="elementx" draggable="true" ondragend="dragEnd()" ondrop="onDrop(event)" ondragenter="dragEnter(event)" ondragover="dragOver(event)" ondragstart="dragStart(event)">Bananas 2</div>-->
+<!--        <div class="elementx" draggable="true" ondragend="dragEnd()" ondrop="onDrop(event)" ondragenter="dragEnter(event)" ondragover="dragOver(event)" ondragstart="dragStart(event)">Strawberries 2</div>-->
+<!--    </div>-->
+<!--    <div ondragenter="columnOnDragEnter(event)" ondragleave="columnOnDragLeave(event)" class="kcol col-3 themed-grid-col" ondragover="columnOnDragOver(event)" style="background: #cecece">-->
+<!--        <div class="elementx" draggable="true" ondragend="dragEnd()" ondrop="onDrop(event)" ondragenter="dragEnter(event)" ondragover="dragOver(event)" ondragstart="dragStart(event)">Apples 3</div>-->
+<!--        <div class="elementx" draggable="true" ondragend="dragEnd()" ondrop="onDrop(event)" ondragenter="dragEnter(event)" ondragover="dragOver(event)" ondragstart="dragStart(event)">Oranges 3</div>-->
+<!--        <div class="elementx" draggable="true" ondragend="dragEnd()" ondrop="onDrop(event)" ondragenter="dragEnter(event)" ondragover="dragOver(event)" ondragstart="dragStart(event)">Bananas 3</div>-->
+<!--        <div class="elementx" draggable="true" ondragend="dragEnd()" ondrop="onDrop(event)" ondragenter="dragEnter(event)" ondragover="dragOver(event)" ondragstart="dragStart(event)">Strawberries 3</div>-->
+<!--    </div>-->
+</div>
+
+
+</body>
+</html>

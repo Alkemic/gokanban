@@ -142,10 +142,12 @@ func (r *restHandler) GetMux() *http.ServeMux {
 	timeTrackDecorator := middleware.TimeTrack(r.logger)
 	panicInterceptor := middleware.PanicInterceptorWithLogger(r.logger)
 	authenticate := r.authenticateMiddleware.LoginRequiredMiddleware
+	authenticate = r.authenticateMiddleware.DummyMiddleware
 	mux := http.NewServeMux()
 
 	serveStatic := http.FileServer(http.Dir("static"))
 	mux.Handle("/static/", http.StripPrefix("/static", serveStatic))
+	mux.Handle("/frontend/", http.StripPrefix("/frontend", http.FileServer(http.Dir("frontend"))))
 
 	TaskRouting := route.RegexpRouter{}
 	TaskRouting.Add(`^/task/?$`, TaskCollection.Dispatch)
@@ -172,6 +174,26 @@ func (r *restHandler) GetMux() *http.ServeMux {
 			LogoutURL: account.LogoutPageURL,
 		}
 		if err := tmpl.ExecuteTemplate(rw, "index.html", tmplData); err != nil {
+			r.logger.Println("cannot execute template:", err)
+			http.Error(rw, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			return
+		}
+	})))
+	mux.HandleFunc("/new", timeTrackDecorator(authenticate(func(rw http.ResponseWriter, req *http.Request) {
+		tmpl := template.Must(template.New("new.html").Funcs(map[string]interface{}{
+			"marshal": func(v interface{}) template.JS {
+				a, _ := json.Marshal(v)
+				return template.JS(a)
+			},
+		}).Delims("[[", "]]").ParseFiles("frontend/templates/new.html"))
+		tmplData := struct {
+			User      repository.User
+			LogoutURL string
+		}{
+			User:      account.GetUser(req),
+			LogoutURL: account.LogoutPageURL,
+		}
+		if err := tmpl.ExecuteTemplate(rw, "new.html", tmplData); err != nil {
 			r.logger.Println("cannot execute template:", err)
 			http.Error(rw, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 			return

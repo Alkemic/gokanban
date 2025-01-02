@@ -108,3 +108,12 @@ func (m *Middleware) LoginRequiredMiddleware(f http.HandlerFunc) http.HandlerFun
 		f(rw, req)
 	}
 }
+
+func (m *Middleware) DummyMiddleware(f http.HandlerFunc) http.HandlerFunc {
+	return func(rw http.ResponseWriter, req *http.Request) {
+		user := repository.User{Name: "dummy"}
+		SetUser(req, user)
+
+		f(rw, req)
+	}
+}
